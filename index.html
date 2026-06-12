@@ -607,9 +607,10 @@
         <div class="info-regras" style="margin-bottom:8px;">
             🗓️ <strong>Jogos ordenados por data e horário</strong> • 🇧🇷 Bandeiras • ⚽ Classificação automática • 🏆 Mata-mata automático • 💾 Salvamento automático
         </div>
-        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
             <button id="toggleGruposBtn" class="btn-expand-all">📁 Recolher grupos</button>
             <button id="toggleFasesBtn" class="btn-expand-all">🏆 Recolher fases</button>
+            <span id="relogioDataHora" style="margin-left: auto; font-size: 0.85rem; opacity: 0.8; white-space: nowrap;">📅 12/06/2026 00:00</span>
         </div>
         <!-- Menu recolhível de instruções -->
         <div class="menu-instrucoes" id="menuInstrucoes">
@@ -703,7 +704,7 @@
         A: [11, 18, 24], B: [12, 18, 24], C: [13, 19, 24],
         D: [12, 19, 25], E: [14, 20, 25], F: [14, 20, 25],
         G: [15, 21, 26], H: [15, 21, 26], I: [16, 22, 26],
-        J: [16, 22, 27], K: [17, 23, 27], L: [17, 23, 27]
+        J: [16, 22, 26], K: [17, 23, 26], L: [17, 23, 26]
     };
 
     // Mapeamento de cada jogo com data e hora (formato "dd/mm • HH:MM") e timestamp para ordenar
@@ -1221,17 +1222,20 @@
             }
             mapa.get(key).jogos.push(jogo);
         }
-        // Ordenar por data
+        // Ordenar por data e, dentro de cada dia, por horário (timestamp)
         calendarioDatas = Array.from(mapa.values()).sort((a,b) => a.dataObj - b.dataObj);
+        for (const dia of calendarioDatas) {
+            dia.jogos.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        }
     }
 
     function formatarDataExtenso(dataObj) {
         const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         const diasSemana = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
         return {
-            diaSemana: diasSemana[dataObj.getDay()],
-            dia: dataObj.getDate(),
-            mes: meses[dataObj.getMonth()]
+            diaSemana: diasSemana[dataObj.getUTCDay()],
+            dia: dataObj.getUTCDate(),
+            mes: meses[dataObj.getUTCMonth()]
         };
     }
 
@@ -1362,7 +1366,22 @@
     renderCompleto();
     atualizarBotoesToggle();
 
-    // ========== 🔔 NOTIFICAÇÕES DE JOGOS (30 min antes) ==========
+    // ========== � RELÓGIO (data e hora atual) ==========
+    function atualizarRelogio() {
+        const el = document.getElementById('relogioDataHora');
+        if (!el) return;
+        const agora = new Date();
+        const dia = String(agora.getDate()).padStart(2, '0');
+        const mes = String(agora.getMonth() + 1).padStart(2, '0');
+        const ano = agora.getFullYear();
+        const horas = String(agora.getHours()).padStart(2, '0');
+        const minutos = String(agora.getMinutes()).padStart(2, '0');
+        el.textContent = `📅 ${dia}/${mes}/${ano} ${horas}:${minutos}`;
+    }
+    atualizarRelogio();
+    setInterval(atualizarRelogio, 30000); // atualiza a cada 30s
+
+    // ========== �🔔 NOTIFICAÇÕES DE JOGOS (30 min antes) ==========
     const NOTIFICATIONS_STORAGE_KEY = 'copa2026_notificacoes';
     let notificacoesAtivas = false;
     let notificacaoTimers = [];
