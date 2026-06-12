@@ -458,8 +458,9 @@
             transition: max-height 0.35s ease, padding 0.35s ease;
         }
         .menu-instrucoes.open {
-            max-height: 500px;
+            max-height: 80vh;
             padding: 12px 14px;
+            overflow-y: auto;
         }
         .menu-instrucoes h3 {
             font-size: 0.85rem;
@@ -474,6 +475,88 @@
             color: #c5d6d6;
         }
         .menu-instrucoes li { margin-bottom: 2px; }
+        .menu-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #1e3a3f;
+            padding-bottom: 0;
+        }
+        .menu-tab {
+            background: transparent;
+            color: #8aa;
+            border: none;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            border-radius: 12px 12px 0 0;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .menu-tab.active {
+            background: #1e3a3f;
+            color: #f5d98f;
+        }
+        .menu-tab-content { display: none; }
+        .menu-tab-content.active { display: block; }
+        .calendario-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .calendario-nav-btn {
+            background: #1e3a3f;
+            color: #f5d98f;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .calendario-nav-btn:disabled { opacity: 0.3; cursor: default; }
+        .calendario-data {
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.82rem;
+            color: #f5d98f;
+        }
+        .calendario-subtitle {
+            font-size: 0.65rem;
+            color: #8aa;
+            font-weight: normal;
+        }
+        .calendario-jogos { margin-top: 6px; }
+        .calendario-jogo {
+            background: #0f2a2a;
+            border-radius: 12px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            font-size: 0.72rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .calendario-jogo .cj-times { font-weight: bold; color: #edf4f2; }
+        .calendario-jogo .cj-info { color: #8aa; font-size: 0.65rem; }
+        .calendario-jogo .cj-grupo {
+            background: #1e3a3f;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.6rem;
+            color: #f5d98f;
+        }
+        .calendario-vazio {
+            text-align: center;
+            color: #8aa;
+            font-size: 0.75rem;
+            padding: 12px 0;
+        }
     </style>
 </head>
 <body>
@@ -502,16 +585,30 @@
         </div>
         <!-- Menu recolhível de instruções -->
         <div class="menu-instrucoes" id="menuInstrucoes">
-            <h3>📱 Como usar no celular</h3>
-            <ul>
-                <li>🖐️ <strong>Toque</strong> no nome do grupo (ex: "Grupo A") para expandir/recolher</li>
-                <li>🔢 <strong>Digite os placares</strong> nos campos numéricos de cada jogo</li>
-                <li>📊 A <strong>classificação</strong> e o <strong>mata-mata</strong> atualizam automaticamente</li>
-                <li>💾 Use o botão <strong>Salvar</strong> para guardar seus palpites</li>
-                <li>🔄 <strong>Resetar</strong> apaga todos os resultados (confirmação necessária)</li>
-                <li>📂 Use <strong>Expandir/Recolher</strong> para navegar rápido entre grupos e fases</li>
-                <li>🔽 <strong>Role a página</strong> — o cabeçalho fica fixo no topo</li>
-            </ul>
+            <div class="menu-tabs">
+                <button class="menu-tab active" data-menu-tab="instrucoes">📱 Instruções</button>
+                <button class="menu-tab" data-menu-tab="calendario">📅 Calendário</button>
+            </div>
+            <div class="menu-tab-content active" data-menu-content="instrucoes">
+                <ul>
+                    <li>🖐️ <strong>Toque</strong> no nome do grupo (ex: "Grupo A") para expandir/recolher</li>
+                    <li>🔢 <strong>Digite os placares</strong> nos campos numéricos de cada jogo</li>
+                    <li>📊 A <strong>classificação</strong> e o <strong>mata-mata</strong> atualizam automaticamente</li>
+                    <li>💾 O salvamento é <strong>automático</strong> a cada alteração</li>
+                    <li>🔔 Ative as <strong>notificações</strong> para receber alertas 30min antes</li>
+                    <li>🔄 <strong>Resetar</strong> apaga todos os resultados (confirmação necessária)</li>
+                    <li>📂 Use <strong>Expandir/Recolher</strong> para navegar rápido entre grupos e fases</li>
+                    <li>🔽 <strong>Role a página</strong> — o cabeçalho fica fixo no topo</li>
+                </ul>
+            </div>
+            <div class="menu-tab-content" data-menu-content="calendario">
+                <div class="calendario-nav">
+                    <button class="calendario-nav-btn" id="calPrevBtn" title="Dia anterior">◀</button>
+                    <div class="calendario-data" id="calDataTitulo"></div>
+                    <button class="calendario-nav-btn" id="calNextBtn" title="Próximo dia">▶</button>
+                </div>
+                <div class="calendario-jogos" id="calJogosLista"></div>
+            </div>
         </div>
     </div>
 
@@ -886,7 +983,106 @@
         if (menu) {
             menu.classList.toggle("open");
             btn.innerHTML = menu.classList.contains("open") ? "✕" : "☰";
+            // Se abriu o menu na aba calendário, renderizar
+            if (menu.classList.contains("open")) {
+                let tabAtiva = menu.querySelector('.menu-tab-content.active');
+                if (tabAtiva && tabAtiva.dataset.menuContent === 'calendario') {
+                    renderCalendario();
+                }
+            }
         }
+    });
+
+    // ========== 📅 CALENDÁRIO DE JOGOS ==========
+    let calendarioDatas = []; // [{dataStr, dataObj, jogos: [...]}]
+    let calendarioIdxAtual = 0;
+
+    function construirCalendario() {
+        const mapa = new Map();
+        const todos = coletarTodosJogos ? coletarTodosJogos() : [];
+        for (const jogo of todos) {
+            if (!jogo.timestamp) continue;
+            const d = new Date(jogo.timestamp);
+            // Ajustar para horário de Brasília (UTC-3)
+            const key = `${d.getUTCDate().toString().padStart(2,'0')}/${(d.getUTCMonth()+1).toString().padStart(2,'0')}`;
+            if (!mapa.has(key)) {
+                mapa.set(key, { dataStr: key, dataObj: new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()), jogos: [] });
+            }
+            mapa.get(key).jogos.push(jogo);
+        }
+        // Ordenar por data
+        calendarioDatas = Array.from(mapa.values()).sort((a,b) => a.dataObj - b.dataObj);
+    }
+
+    function formatarDataExtenso(dataObj) {
+        const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const diasSemana = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+        return {
+            diaSemana: diasSemana[dataObj.getDay()],
+            dia: dataObj.getDate(),
+            mes: meses[dataObj.getMonth()]
+        };
+    }
+
+    function irParaData(idx) {
+        if (idx < 0 || idx >= calendarioDatas.length) return;
+        calendarioIdxAtual = idx;
+        renderCalendario();
+    }
+
+    function renderCalendario() {
+        construirCalendario();
+        if (calendarioDatas.length === 0) {
+            document.getElementById('calDataTitulo').innerHTML = '<span class="calendario-subtitle">Nenhum jogo disponível</span>';
+            document.getElementById('calJogosLista').innerHTML = '<div class="calendario-vazio">📅 Preencha os resultados dos grupos para ver o calendário</div>';
+            document.getElementById('calPrevBtn').disabled = true;
+            document.getElementById('calNextBtn').disabled = true;
+            return;
+        }
+        // Ajustar índice se necessário
+        if (calendarioIdxAtual >= calendarioDatas.length) calendarioIdxAtual = calendarioDatas.length - 1;
+        if (calendarioIdxAtual < 0) calendarioIdxAtual = 0;
+
+        const dia = calendarioDatas[calendarioIdxAtual];
+        const fmt = formatarDataExtenso(dia.dataObj);
+        document.getElementById('calDataTitulo').innerHTML = `${fmt.diaSemana}, ${fmt.dia} de ${fmt.mes}<br><span class="calendario-subtitle">${dia.jogos.length} jogo(s)</span>`;
+        document.getElementById('calPrevBtn').disabled = calendarioIdxAtual === 0;
+        document.getElementById('calNextBtn').disabled = calendarioIdxAtual >= calendarioDatas.length - 1;
+
+        let html = '';
+        for (const j of dia.jogos) {
+            const hora = j.dataHora ? j.dataHora.split(' • ')[1] || '' : '';
+            const local = j.local || '';
+            html += `<div class="calendario-jogo">
+                <div style="flex:1;min-width:0;">
+                    <div class="cj-times"><span class="flag-emoji">${getFlag(j.timeCasa)}</span> ${escapeHtml(j.timeCasa)} <span style="color:#e6b12e;">vs</span> <span class="flag-emoji">${getFlag(j.timeFora)}</span> ${escapeHtml(j.timeFora)}</div>
+                    <div class="cj-info">🕐 ${hora} • 🏟️ ${escapeHtml(local)}</div>
+                </div>
+                <span class="cj-grupo">${j.grupo || ''}</span>
+            </div>`;
+        }
+        document.getElementById('calJogosLista').innerHTML = html;
+    }
+
+    // Navegação do calendário
+    document.getElementById('calPrevBtn')?.addEventListener('click', () => irParaData(calendarioIdxAtual - 1));
+    document.getElementById('calNextBtn')?.addEventListener('click', () => irParaData(calendarioIdxAtual + 1));
+
+    // Abas do menu
+    document.querySelectorAll('.menu-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.dataset.menuTab;
+            // Ativar aba
+            document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            // Mostrar conteúdo
+            document.querySelectorAll('.menu-tab-content').forEach(c => c.classList.remove('active'));
+            const content = document.querySelector(`[data-menu-content="${target}"]`);
+            if (content) {
+                content.classList.add('active');
+                if (target === 'calendario') renderCalendario();
+            }
+        });
     });
 
     carregarStorage();
