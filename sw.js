@@ -134,6 +134,21 @@ self.addEventListener('message', event => {
       });
     });
   }
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { titulo, corpo, tag } = event.data;
+    const options = {
+      body: corpo,
+      tag: tag || 'copa2026-jogo',
+      icon: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'%3E%3Crect width=\'192\' height=\'192\' rx=\'38\' fill=\'%230c1f1f\'/%3E%3Ccircle cx=\'96\' cy=\'100\' r=\'61\' fill=\'none\' stroke=\'%23e6b12e\' stroke-width=\'10\'/%3E%3Ctext x=\'96\' y=\'130\' text-anchor=\'middle\' font-size=\'80\'%3E🏆%3C/text%3E%3C/svg%3E',
+      badge: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 96 96\'%3E%3Crect width=\'96\' height=\'96\' rx=\'20\' fill=\'%230c1f1f\'/%3E%3Ctext x=\'48\' y=\'64\' text-anchor=\'middle\' font-size=\'56\'%3E⚽%3C/text%3E%3C/svg%3E',
+      renotify: true,
+      requireInteraction: false,
+      data: { url: OFFLINE_URL }
+    };
+    event.waitUntil(
+      self.registration.showNotification(titulo, options)
+    );
+  }
 });
 
 // ========== PUSH NOTIFICATION (preparado para futuro) ==========
