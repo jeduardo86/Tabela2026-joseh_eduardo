@@ -556,6 +556,17 @@
     }
 
     // ---------- LÓGICA DE CLASSIFICAÇÃO E MATA-MATA (automático) ----------
+    function temJogosRealizados() {
+        for (let g in gruposData) {
+            for (let j of gruposData[g].jogos) {
+                let gc = (j.golsCasa !== "" && !isNaN(parseInt(j.golsCasa))) ? parseInt(j.golsCasa) : null;
+                let gf = (j.golsFora !== "" && !isNaN(parseInt(j.golsFora))) ? parseInt(j.golsFora) : null;
+                if (gc !== null && gf !== null) return true;
+            }
+        }
+        return false;
+    }
+
     function calcularTabelaGrupo(grupoLetra) {
         const grupo = gruposData[grupoLetra];
         if (!grupo) return [];
@@ -631,7 +642,31 @@
         mataData.terceiroLugar = { time1: semis[2]?.vencedor || semis[2]?.time1 || tercEx?.time1, time2: semis[3]?.vencedor || semis[3]?.time2 || tercEx?.time2, gols1: tercEx?.gols1||"", gols2: tercEx?.gols2||"", info: mataInfo.terceiro, vencedor: null };
     }
 
-    function regenerarOitavasPorGrupos() { let classif = calcularClassificados(); let novas = gerarOitavas(classif); for (let i=0;i<novas.length;i++) { let antigo = mataData.oitavas[i]; if (antigo && antigo.time1 === novas[i].time1 && antigo.time2 === novas[i].time2) { novas[i].gols1 = antigo.gols1; novas[i].gols2 = antigo.gols2; } } mataData.oitavas = novas; atualizarBracketCompleto(); }
+    function regenerarOitavasPorGrupos() {
+        if (!temJogosRealizados()) {
+            mataData.oitavas = [];
+            for (let i = 0; i < 16; i++) {
+                mataData.oitavas.push({
+                    id: i, time1: "", time2: "",
+                    gols1: "", gols2: "",
+                    info: mataInfo.oitavas[i] || "A definir"
+                });
+            }
+            atualizarBracketCompleto();
+            return;
+        }
+        let classif = calcularClassificados();
+        let novas = gerarOitavas(classif);
+        for (let i = 0; i < novas.length; i++) {
+            let antigo = mataData.oitavas[i];
+            if (antigo && antigo.time1 === novas[i].time1 && antigo.time2 === novas[i].time2) {
+                novas[i].gols1 = antigo.gols1;
+                novas[i].gols2 = antigo.gols2;
+            }
+        }
+        mataData.oitavas = novas;
+        atualizarBracketCompleto();
+    }
 
     // ---------- RENDERIZAÇÃO COM ORDENAÇÃO (já garantida) ----------
     function escapeHtml(s) { if(!s) return ""; return s.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
