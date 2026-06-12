@@ -672,7 +672,7 @@
         return Date.UTC(year, month, day, hour + 3, minute || 0);
     }
 
-    // Datas das 3 rodadas por grupo (Junho 2026)
+    // Datas das 3 rodadas por grupo (Junho 2026) — base oficial
     const rodadas = {
         A: [11, 18, 24], B: [12, 18, 24], C: [13, 19, 24],
         D: [12, 19, 25], E: [14, 20, 25], F: [14, 20, 25],
@@ -682,19 +682,103 @@
 
     // Mapeamento de cada jogo com data e hora (formato "dd/mm • HH:MM") e timestamp para ordenar
     function construirJogosComData() {
-        // Dicionário específico baseado na tabela oficial FIFA
+        // Dicionário específico COMPLETO baseado na tabela oficial FIFA 2026
+        const ts = (d, h, m) => toBrazilTimestamp(2026, 5, d, h, m || 0);
         const especificos = {
-            "A|México|África do Sul": { dataHora: "11/06 • 16:00", local: "Estádio Azteca, Cidade do México", timestamp: toBrazilTimestamp(2026,5,11,16,0) },
-            "A|Coreia do Sul|Tchéquia": { dataHora: "11/06 • 23:00", local: "Estádio Akron, Zapopan", timestamp: toBrazilTimestamp(2026,5,11,23,0) },
-            "B|Canadá|Bósnia e Herzegovina": { dataHora: "12/06 • 16:00", local: "BMO Field, Toronto", timestamp: toBrazilTimestamp(2026,5,12,16,0) },
-            "B|Catar|Suíça": { dataHora: "13/06 • 16:00", local: "Levi's Stadium, Santa Clara", timestamp: toBrazilTimestamp(2026,5,13,16,0) },
-            "C|Brasil|Marrocos": { dataHora: "13/06 • 19:00", local: "MetLife Stadium, East Rutherford", timestamp: toBrazilTimestamp(2026,5,13,19,0) },
-            "C|Brasil|Haiti": { dataHora: "19/06 • 21:30", local: "Lincoln Financial Field, Filadélfia", timestamp: toBrazilTimestamp(2026,5,19,21,30) },
-            "C|Escócia|Brasil": { dataHora: "24/06 • 19:00", local: "Hard Rock Stadium, Miami Gardens", timestamp: toBrazilTimestamp(2026,5,24,19,0) },
-            "D|Estados Unidos|Paraguai": { dataHora: "12/06 • 22:00", local: "SoFi Stadium, Inglewood", timestamp: toBrazilTimestamp(2026,5,12,22,0) },
-            "E|Alemanha|Curaçao": { dataHora: "14/06 • 14:00", local: "NRG Stadium, Houston", timestamp: toBrazilTimestamp(2026,5,14,14,0) },
-            "H|Uruguai|Espanha": { dataHora: "26/06 • 21:00", local: "Estádio Akron, Zapopan", timestamp: toBrazilTimestamp(2026,5,26,21,0) },
-            "J|Argentina|Jordânia": { dataHora: "27/06 • 23:00", local: "AT&T Stadium, Arlington", timestamp: toBrazilTimestamp(2026,5,27,23,0) }
+            // ===== 1ª RODADA =====
+            // 11 de junho (quinta-feira)
+            "A|México|África do Sul":           { dataHora: "11/06 • 16:00", local: "Estádio Azteca, Cidade do México", timestamp: ts(11,16) },
+            "A|Coreia do Sul|Tchéquia":         { dataHora: "11/06 • 23:00", local: "Estádio Akron, Zapopan", timestamp: ts(11,23) },
+            // 12 de junho (sexta-feira)
+            "B|Canadá|Bósnia e Herzegovina":    { dataHora: "12/06 • 16:00", local: "BMO Field, Toronto", timestamp: ts(12,16) },
+            "D|Estados Unidos|Paraguai":        { dataHora: "12/06 • 22:00", local: "SoFi Stadium, Inglewood", timestamp: ts(12,22) },
+            // 13 de junho (sábado)
+            "B|Catar|Suíça":                    { dataHora: "13/06 • 16:00", local: "Levi's Stadium, Santa Clara", timestamp: ts(13,16) },
+            "C|Brasil|Marrocos":                { dataHora: "13/06 • 19:00", local: "MetLife Stadium, East Rutherford", timestamp: ts(13,19) },
+            "C|Haiti|Escócia":                  { dataHora: "13/06 • 22:00", local: "Estádio BBVA, Guadalupe", timestamp: ts(13,22) },
+            "D|Austrália|Turquia":              { dataHora: "13/06 • 01:00", local: "Lumen Field, Seattle", timestamp: toBrazilTimestamp(2026,5,14,1,0) },
+            // 14 de junho (domingo)
+            "E|Alemanha|Curaçao":               { dataHora: "14/06 • 14:00", local: "NRG Stadium, Houston", timestamp: ts(14,14) },
+            "F|Holanda|Japão":                  { dataHora: "14/06 • 17:00", local: "Mercedes-Benz Stadium, Atlanta", timestamp: ts(14,17) },
+            "E|Costa do Marfim|Equador":        { dataHora: "14/06 • 20:00", local: "Gillette Stadium, Foxborough", timestamp: ts(14,20) },
+            "F|Suécia|Tunísia":                 { dataHora: "14/06 • 23:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(14,23) },
+            // 15 de junho (segunda-feira)
+            "H|Espanha|Cabo Verde":             { dataHora: "15/06 • 13:00", local: "BMO Field, Toronto", timestamp: ts(15,13) },
+            "G|Bélgica|Egito":                  { dataHora: "15/06 • 16:00", local: "BC Place, Vancouver", timestamp: ts(15,16) },
+            "H|Arábia Saudita|Uruguai":         { dataHora: "15/06 • 19:00", local: "MetLife Stadium, East Rutherford", timestamp: ts(15,19) },
+            "G|Irã|Nova Zelândia":              { dataHora: "15/06 • 22:00", local: "Lincoln Financial Field, Filadélfia", timestamp: ts(15,22) },
+            // 16 de junho (terça-feira)
+            "I|França|Senegal":                 { dataHora: "16/06 • 16:00", local: "Estádio Azteca, Cidade do México", timestamp: ts(16,16) },
+            "I|Iraque|Noruega":                 { dataHora: "16/06 • 19:00", local: "SoFi Stadium, Inglewood", timestamp: ts(16,19) },
+            "J|Argentina|Argélia":              { dataHora: "16/06 • 22:00", local: "Estádio Akron, Zapopan", timestamp: ts(16,22) },
+            "J|Áustria|Jordânia":               { dataHora: "16/06 • 01:00", local: "AT&T Stadium, Arlington", timestamp: toBrazilTimestamp(2026,5,17,1,0) },
+            // 17 de junho (quarta-feira)
+            "K|Portugal|República Democrática do Congo": { dataHora: "17/06 • 14:00", local: "Estádio BBVA, Guadalupe", timestamp: ts(17,14) },
+            "L|Inglaterra|Croácia":             { dataHora: "17/06 • 17:00", local: "Lumen Field, Seattle", timestamp: ts(17,17) },
+            "L|Gana|Panamá":                    { dataHora: "17/06 • 20:00", local: "Levi's Stadium, Santa Clara", timestamp: ts(17,20) },
+            "K|Uzbequistão|Colômbia":           { dataHora: "17/06 • 23:00", local: "NRG Stadium, Houston", timestamp: ts(17,23) },
+
+            // ===== 2ª RODADA =====
+            // 18 de junho (quinta-feira)
+            "A|Tchéquia|África do Sul":         { dataHora: "18/06 • 13:00", local: "Estádio Akron, Zapopan", timestamp: ts(18,13) },
+            "B|Suíça|Bósnia e Herzegovina":     { dataHora: "18/06 • 16:00", local: "BC Place, Vancouver", timestamp: ts(18,16) },
+            "B|Canadá|Catar":                   { dataHora: "18/06 • 19:00", local: "NRG Stadium, Houston", timestamp: ts(18,19) },
+            "A|México|Coreia do Sul":           { dataHora: "18/06 • 22:00", local: "AT&T Stadium, Arlington", timestamp: ts(18,22) },
+            // 19 de junho (sexta-feira)
+            "D|Estados Unidos|Austrália":       { dataHora: "19/06 • 16:00", local: "Hard Rock Stadium, Miami Gardens", timestamp: ts(19,16) },
+            "C|Escócia|Marrocos":               { dataHora: "19/06 • 19:00", local: "BMO Field, Toronto", timestamp: ts(19,19) },
+            "C|Brasil|Haiti":                   { dataHora: "19/06 • 21:30", local: "Lincoln Financial Field, Filadélfia", timestamp: ts(19,21,30) },
+            "D|Turquia|Paraguai":               { dataHora: "19/06 • 01:00", local: "Estádio Azteca, Cidade do México", timestamp: toBrazilTimestamp(2026,5,20,1,0) },
+            // 20 de junho (sábado)
+            "F|Holanda|Suécia":                 { dataHora: "20/06 • 14:00", local: "BC Place, Vancouver", timestamp: ts(20,14) },
+            "E|Alemanha|Costa do Marfim":       { dataHora: "20/06 • 17:00", local: "Mercedes-Benz Stadium, Atlanta", timestamp: ts(20,17) },
+            "E|Equador|Curaçao":                { dataHora: "20/06 • 21:00", local: "Estádio Akron, Zapopan", timestamp: ts(20,21) },
+            "F|Tunísia|Japão":                  { dataHora: "20/06 • 01:00", local: "Estádio BBVA, Guadalupe", timestamp: toBrazilTimestamp(2026,5,21,1,0) },
+            // 21 de junho (domingo)
+            "H|Espanha|Arábia Saudita":         { dataHora: "21/06 • 13:00", local: "Estádio Azteca, Cidade do México", timestamp: ts(21,13) },
+            "G|Bélgica|Irã":                    { dataHora: "21/06 • 16:00", local: "BMO Field, Toronto", timestamp: ts(21,16) },
+            "H|Uruguai|Cabo Verde":             { dataHora: "21/06 • 19:00", local: "Gillette Stadium, Foxborough", timestamp: ts(21,19) },
+            "G|Nova Zelândia|Egito":            { dataHora: "21/06 • 22:00", local: "Lumen Field, Seattle", timestamp: ts(21,22) },
+            // 22 de junho (segunda-feira)
+            "J|Argentina|Áustria":              { dataHora: "22/06 • 14:00", local: "Estádio BBVA, Guadalupe", timestamp: ts(22,14) },
+            "I|França|Iraque":                  { dataHora: "22/06 • 18:00", local: "Estádio Akron, Zapopan", timestamp: ts(22,18) },
+            "I|Noruega|Senegal":                { dataHora: "22/06 • 21:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(22,21) },
+            "J|Jordânia|Argélia":               { dataHora: "22/06 • 00:00", local: "Lincoln Financial Field, Filadélfia", timestamp: toBrazilTimestamp(2026,5,23,0,0) },
+            // 23 de junho (terça-feira)
+            "K|Portugal|Uzbequistão":           { dataHora: "23/06 • 14:00", local: "Lumen Field, Seattle", timestamp: ts(23,14) },
+            "L|Inglaterra|Gana":                { dataHora: "23/06 • 17:00", local: "Gillette Stadium, Foxborough", timestamp: ts(23,17) },
+            "L|Panamá|Croácia":                 { dataHora: "23/06 • 20:00", local: "SoFi Stadium, Inglewood", timestamp: ts(23,20) },
+            "K|Colômbia|República Democrática do Congo": { dataHora: "23/06 • 23:00", local: "MetLife Stadium, East Rutherford", timestamp: ts(23,23) },
+
+            // ===== 3ª RODADA =====
+            // 24 de junho (quarta-feira)
+            "B|Suíça|Canadá":                   { dataHora: "24/06 • 16:00", local: "Levi's Stadium, Santa Clara", timestamp: ts(24,16) },
+            "B|Bósnia e Herzegovina|Catar":     { dataHora: "24/06 • 16:00", local: "Mercedes-Benz Stadium, Atlanta", timestamp: ts(24,16) },
+            "C|Marrocos|Haiti":                 { dataHora: "24/06 • 19:00", local: "BC Place, Vancouver", timestamp: ts(24,19) },
+            "C|Escócia|Brasil":                 { dataHora: "24/06 • 19:00", local: "Hard Rock Stadium, Miami Gardens", timestamp: ts(24,19) },
+            "A|África do Sul|Coreia do Sul":    { dataHora: "24/06 • 22:00", local: "Estádio Azteca, Cidade do México", timestamp: ts(24,22) },
+            "A|Tchéquia|México":                { dataHora: "24/06 • 22:00", local: "Estádio Akron, Zapopan", timestamp: ts(24,22) },
+            // 25 de junho (quinta-feira)
+            "E|Equador|Alemanha":               { dataHora: "25/06 • 17:00", local: "BC Place, Vancouver", timestamp: ts(25,17) },
+            "E|Curaçao|Costa do Marfim":        { dataHora: "25/06 • 17:00", local: "Estádio Azteca, Cidade do México", timestamp: ts(25,17) },
+            "F|Tunísia|Holanda":                { dataHora: "25/06 • 20:00", local: "BMO Field, Toronto", timestamp: ts(25,20) },
+            "F|Japão|Suécia":                   { dataHora: "25/06 • 20:00", local: "Estádio Akron, Zapopan", timestamp: ts(25,20) },
+            "D|Turquia|Estados Unidos":         { dataHora: "25/06 • 23:00", local: "Mercedes-Benz Stadium, Atlanta", timestamp: ts(25,23) },
+            "D|Paraguai|Austrália":             { dataHora: "25/06 • 23:00", local: "BMO Field, Toronto", timestamp: ts(25,23) },
+            // 26 de junho (sexta-feira)
+            "I|Senegal|Iraque":                 { dataHora: "26/06 • 16:00", local: "Estádio BBVA, Guadalupe", timestamp: ts(26,16) },
+            "I|Noruega|França":                 { dataHora: "26/06 • 16:00", local: "Gillette Stadium, Foxborough", timestamp: ts(26,16) },
+            "H|Cabo Verde|Arábia Saudita":      { dataHora: "26/06 • 21:00", local: "Lumen Field, Seattle", timestamp: ts(26,21) },
+            "H|Uruguai|Espanha":                { dataHora: "26/06 • 21:00", local: "Estádio Akron, Zapopan", timestamp: ts(26,21) },
+            "G|Egito|Irã":                      { dataHora: "26/06 • 00:00", local: "Estádio Azteca, Cidade do México", timestamp: toBrazilTimestamp(2026,5,27,0,0) },
+            "G|Nova Zelândia|Bélgica":          { dataHora: "26/06 • 00:00", local: "Estádio BBVA, Guadalupe", timestamp: toBrazilTimestamp(2026,5,27,0,0) },
+            // 27 de junho (sábado)
+            "L|Croácia|Gana":                   { dataHora: "27/06 • 18:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(27,18) },
+            "L|Panamá|Inglaterra":              { dataHora: "27/06 • 18:00", local: "MetLife Stadium, East Rutherford", timestamp: ts(27,18) },
+            "K|República Democrática do Congo|Uzbequistão": { dataHora: "27/06 • 20:30", local: "Gillette Stadium, Foxborough", timestamp: ts(27,20,30) },
+            "K|Colômbia|Portugal":              { dataHora: "27/06 • 20:30", local: "Lincoln Financial Field, Filadélfia", timestamp: ts(27,20,30) },
+            "J|Jordânia|Argentina":             { dataHora: "27/06 • 23:00", local: "AT&T Stadium, Arlington", timestamp: ts(27,23) },
+            "J|Argélia|Áustria":                { dataHora: "27/06 • 23:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(27,23) }
         };
         // Gerar todos os jogos de todos os grupos
         let jogosPorGrupo = {};
@@ -748,7 +832,7 @@
             "28/06 • 16:00 • SoFi Stadium, Inglewood", "29/06 • 14:00 • NRG Stadium, Houston", "29/06 • 17:30 • Gillette Stadium, Foxborough", "29/06 • 22:00 • Estádio BBVA, Guadalupe",
             "30/06 • 14:00 • AT&T Stadium, Arlington", "30/06 • 18:00 • MetLife Stadium, East Rutherford", "30/06 • 22:00 • Estádio Azteca, Cidade do México", "01/07 • 13:00 • Mercedes-Benz Stadium, Atlanta",
             "01/07 • 17:00 • Lumen Field, Seattle", "01/07 • 21:00 • Levi's Stadium, Santa Clara", "02/07 • 16:00 • SoFi Stadium, Inglewood", "02/07 • 20:00 • BMO Field, Toronto",
-            "02/07 • 23:59 • BC Place, Vancouver", "03/07 • 15:00 • AT&T Stadium, Arlington", "03/07 • 19:00 • Hard Rock Stadium, Miami Gardens", "03/07 • 22:30 • Arrowhead Stadium, Kansas City"
+            "02/07 • 00:00 • BC Place, Vancouver", "03/07 • 15:00 • AT&T Stadium, Arlington", "03/07 • 19:00 • Hard Rock Stadium, Miami Gardens", "03/07 • 22:30 • Arrowhead Stadium, Kansas City"
         ],
         quartas: [
             "09/07 • 17:00 • Gillette Stadium, Foxborough", "10/07 • 16:00 • SoFi Stadium, Inglewood",
