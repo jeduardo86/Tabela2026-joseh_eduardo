@@ -546,10 +546,16 @@
         .calendario-jogo .cj-info { color: #8aa; font-size: 0.65rem; }
         .calendario-jogo .cj-grupo {
             background: #1e3a3f;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 10px;
-            font-size: 0.6rem;
+            font-size: 0.62rem;
             color: #f5d98f;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        .calendario-jogo .cj-grupo.fase-mata {
+            background: #5c3a1e;
+            color: #f5b642;
         }
         .calendario-vazio {
             text-align: center;
@@ -1014,6 +1020,14 @@
         calendarioDatas = Array.from(mapa.values()).sort((a,b) => a.dataObj - b.dataObj);
     }
 
+    function formatarTagFase(tag) {
+        if (!tag) return '';
+        // Grupos são letras únicas (A, B, C...) ou começam com letra+espaço
+        if (/^[A-Z]$/.test(tag)) return 'Grupo ' + tag;
+        // Mata-mata já tem nome descritivo
+        return tag;
+    }
+
     function formatarDataExtenso(dataObj) {
         const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         const diasSemana = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
@@ -1058,7 +1072,7 @@
                     <div class="cj-times"><span class="flag-emoji">${getFlag(j.timeCasa)}</span> ${escapeHtml(j.timeCasa)} <span style="color:#e6b12e;">vs</span> <span class="flag-emoji">${getFlag(j.timeFora)}</span> ${escapeHtml(j.timeFora)}</div>
                     <div class="cj-info">🕐 ${hora} • 🏟️ ${escapeHtml(local)}</div>
                 </div>
-                <span class="cj-grupo">${j.grupo || ''}</span>
+                <span class="cj-grupo${j.grupo && j.grupo.length > 2 ? ' fase-mata' : ''}">${formatarTagFase(j.grupo)}</span>
             </div>`;
         }
         document.getElementById('calJogosLista').innerHTML = html;
