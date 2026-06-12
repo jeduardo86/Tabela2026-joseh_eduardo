@@ -1002,11 +1002,11 @@
         const todos = coletarTodosJogos ? coletarTodosJogos() : [];
         for (const jogo of todos) {
             if (!jogo.timestamp) continue;
-            const d = new Date(jogo.timestamp);
-            // Ajustar para horário de Brasília (UTC-3)
+            // Converter timestamp UTC para horário de Brasília (UTC-3)
+            const d = new Date(jogo.timestamp - 3 * 60 * 60 * 1000);
             const key = `${d.getUTCDate().toString().padStart(2,'0')}/${(d.getUTCMonth()+1).toString().padStart(2,'0')}`;
             if (!mapa.has(key)) {
-                mapa.set(key, { dataStr: key, dataObj: new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()), jogos: [] });
+                mapa.set(key, { dataStr: key, dataObj: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), jogos: [] });
             }
             mapa.get(key).jogos.push(jogo);
         }
