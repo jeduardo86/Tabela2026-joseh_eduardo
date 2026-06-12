@@ -391,6 +391,42 @@
             z-index: 200;
         }
         .offline-banner.show { display: block; }
+        .app-banner {
+            display: none;
+            background: linear-gradient(135deg, #e6b12e, #f5b642);
+            color: #0c1f1f;
+            text-align: center;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 199;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .app-banner.show { display: flex; }
+        .app-banner-btn {
+            background: #0c1f1f;
+            color: #f5b642;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .app-banner-close {
+            background: transparent;
+            color: #0c1f1f;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px 6px;
+            opacity: 0.6;
+        }
         .pwa-toast {
             position: fixed;
             bottom: 20px;
@@ -445,6 +481,7 @@
     <!-- CABEÇALHO FIXO -->
     <div class="sticky-header">
         <div id="offlineBanner" class="offline-banner">📡 Sem internet — dados salvos localmente</div>
+        <div id="appBanner" class="app-banner">📲 Você já instalou este app! <button id="appBannerBtn" class="app-banner-btn">Abrir no app</button><button id="appBannerClose" class="app-banner-close">✕</button></div>
         <div class="header-top-row">
             <h1 style="margin:0; font-size:1.4rem;">🏆 COPA DO MUNDO 2026 · <span class="badge-regra">🇧🇷 Ordenado</span></h1>
             <div style="display:flex; gap:8px; align-items:center;">
@@ -1096,6 +1133,61 @@
     if (isStandalone()) {
         if (installBtn) installBtn.style.display = 'none';
     }
+
+    // ========== PWA: Banner "Abra no app" ==========
+    (function configurarBannerApp() {
+        const appBanner = document.getElementById('appBanner');
+        const appBannerBtn = document.getElementById('appBannerBtn');
+        const appBannerClose = document.getElementById('appBannerClose');
+        const APP_INSTALLED_KEY = 'copa2026_app_installed';
+
+        if (!appBanner) return;
+
+        // Verifica se o app foi instalado anteriormente
+        function foiInstaladoAntes() {
+            try { return localStorage.getItem(APP_INSTALLED_KEY) === 'true'; } catch(e) { return false; }
+        }
+
+        function marcarComoInstalado() {
+            try { localStorage.setItem(APP_INSTALLED_KEY, 'true'); } catch(e) {}
+        }
+
+        // Se NÃO está em standalone mas o app já foi instalado antes → sugere abrir pelo ícone
+        if (!isStandalone() && foiInstaladoAntes()) {
+            if (appBanner) {
+                appBanner.classList.add('show');
+                // Guardar que o banner foi mostrado (só mostra 1 vez por sessão)
+                sessionStorage.setItem('copa2026_banner_shown', 'true');
+            }
+        }
+
+        // Esconde banner ao fechar
+        if (appBannerClose) {
+            appBannerClose.addEventListener('click', () => {
+                if (appBanner) appBanner.classList.remove('show');
+            });
+        }
+
+        // Botão "Abrir no app" — tenta fechar a aba do navegador
+        if (appBannerBtn) {
+            appBannerBtn.addEventListener('click', () => {
+                // Mostra instrução já que não podemos abrir o PWA programaticamente
+                showToast('📱 Feche esta aba e abra o app "Copa 2026" pelo ícone na tela inicial!', false);
+                if (appBanner) appBanner.classList.remove('show');
+                // Tenta fechar a aba (só funciona se foi aberta por script)
+                try { window.close(); } catch(e) {}
+            });
+        }
+
+        // Quando o app é instalado, marcar no localStorage
+        window.addEventListener('appinstalled', () => {
+            marcarComoInstalado();
+            console.log('[PWA] App instalado — marcado no localStorage');
+            if (installBtn) installBtn.style.display = 'none';
+            deferredPrompt = null;
+            if (appBanner) appBanner.classList.remove('show');
+        });
+    })();
 
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
