@@ -249,6 +249,20 @@
             align-items: center;
             gap: 6px;
         }
+        .label-bracket {
+            background: #1a3b3b;
+            padding: 5px 10px;
+            border-radius: 28px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            min-width: 80px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #f5b642;
+            border: 1px dashed #f5b642;
+        }
         .mata-placar {
             display: flex;
             align-items: center;
@@ -582,7 +596,7 @@
         <div id="offlineBanner" class="offline-banner">📡 Sem internet — dados salvos localmente</div>
         <div id="appBanner" class="app-banner">📲 Você já instalou este app! <button id="appBannerBtn" class="app-banner-btn">Abrir no app</button><button id="appBannerClose" class="app-banner-close">✕</button></div>
         <div class="header-top-row">
-            <h1 style="margin:0; font-size:1.4rem;">🏆 COPA DO MUNDO 2026 · <span class="badge-regra">🇧🇷 Ordenado</span></h1>
+            <h1 style="margin:0; font-size:1.4rem;">🏆 COPA DO MUNDO 2026 · SELECT PLAY ▶️</h1>
             <div style="display:flex; gap:8px; align-items:center;">
                 <button class="btn-notificar" id="notificarBtn" title="Ativar notificações 30min antes dos jogos">🔕</button>
                 <button class="btn-install" id="installBtn" title="Instalar app">📲 Instalar</button>
@@ -591,13 +605,11 @@
             </div>
         </div>
         <div class="info-regras" style="margin-bottom:8px;">
-            🗓️ <strong>Jogos ordenados por data e horário</strong> • 🏁 Bandeiras • ⚽ Classificação automática • 🏆 Mata-mata automático
+            🗓️ <strong>Jogos ordenados por data e horário</strong> • 🇧🇷 Bandeiras • ⚽ Classificação automática • 🏆 Mata-mata automático • 💾 Salvamento automático
         </div>
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button id="expandAllGroupsBtn" class="btn-expand-all">📂 Expandir grupos</button>
-            <button id="collapseAllGroupsBtn" class="btn-expand-all">📁 Recolher grupos</button>
-            <button id="expandAllPhasesBtn" class="btn-expand-all">🏆 Expandir fases</button>
-            <button id="collapseAllPhasesBtn" class="btn-expand-all">🏆 Recolher fases</button>
+            <button id="toggleGruposBtn" class="btn-expand-all">📁 Recolher grupos</button>
+            <button id="toggleFasesBtn" class="btn-expand-all">🏆 Recolher fases</button>
         </div>
         <!-- Menu recolhível de instruções -->
         <div class="menu-instrucoes" id="menuInstrucoes">
@@ -687,7 +699,7 @@
     }
 
     // Datas das 3 rodadas por grupo (Junho 2026) — base oficial
-    const rodadas = {
+        const rodadas = {
         A: [11, 18, 24], B: [12, 18, 24], C: [13, 19, 24],
         D: [12, 19, 25], E: [14, 20, 25], F: [14, 20, 25],
         G: [15, 21, 26], H: [15, 21, 26], I: [16, 22, 26],
@@ -787,12 +799,12 @@
             "G|Egito|Irã":                      { dataHora: "26/06 • 00:00", local: "Estádio Azteca, Cidade do México", timestamp: ts(26,0) },
             "G|Nova Zelândia|Bélgica":          { dataHora: "26/06 • 00:00", local: "Estádio BBVA, Guadalupe", timestamp: ts(26,0) },
             // 27 de junho (sábado)
-            "L|Croácia|Gana":                   { dataHora: "27/06 • 18:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(27,18) },
-            "L|Panamá|Inglaterra":              { dataHora: "27/06 • 18:00", local: "MetLife Stadium, East Rutherford", timestamp: ts(27,18) },
-            "K|República Democrática do Congo|Uzbequistão": { dataHora: "27/06 • 20:30", local: "Gillette Stadium, Foxborough", timestamp: ts(27,20,30) },
-            "K|Colômbia|Portugal":              { dataHora: "27/06 • 20:30", local: "Lincoln Financial Field, Filadélfia", timestamp: ts(27,20,30) },
-            "J|Jordânia|Argentina":             { dataHora: "27/06 • 23:00", local: "AT&T Stadium, Arlington", timestamp: ts(27,23) },
-            "J|Argélia|Áustria":                { dataHora: "27/06 • 23:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(27,23) }
+            "L|Croácia|Gana":                   { dataHora: "26/06 • 18:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(26,18) },
+            "L|Panamá|Inglaterra":              { dataHora: "26/06 • 18:00", local: "MetLife Stadium, East Rutherford", timestamp: ts(26,18) },
+            "K|República Democrática do Congo|Uzbequistão": { dataHora: "26/06 • 20:30", local: "Gillette Stadium, Foxborough", timestamp: ts(26,20,30) },
+            "K|Colômbia|Portugal":              { dataHora: "26/06 • 20:30", local: "Lincoln Financial Field, Filadélfia", timestamp: ts(26,20,30) },
+            "J|Jordânia|Argentina":             { dataHora: "26/06 • 23:00", local: "AT&T Stadium, Arlington", timestamp: ts(26,23) },
+            "J|Argélia|Áustria":                { dataHora: "26/06 • 23:00", local: "Arrowhead Stadium, Kansas City", timestamp: ts(26,23) }
         };
         // Gerar todos os jogos de todos os grupos
         let jogosPorGrupo = {};
@@ -839,6 +851,62 @@
         final: { time1: "", time2: "", gols1: "", gols2: "", info: "19/07 • 16:00 • MetLife Stadium, East Rutherford" }
     };
     let expansionState = { grupos: {}, fases: { segundaFase: true, oitavas: true, quartas: true, semifinais: true, terceiro: true, final: true } };
+
+    // Labels dos confrontos do mata-mata (bracket oficial FIFA 2026)
+    const LABELS_SEGUNDA_FASE = [
+        { t1: "1º A", t2: "Melhor 3º (C/D/E/F/G/H/I)" },
+        { t1: "2º A", t2: "2º B" },
+        { t1: "1º B", t2: "Melhor 3º (A/C/D/E/F/G)" },
+        { t1: "1º F", t2: "2º C" },
+        { t1: "1º C", t2: "Melhor 3º (A/B/D/E/F/G)" },
+        { t1: "1º E", t2: "2º D" },
+        { t1: "1º D", t2: "Melhor 3º (A/B/C/E/F/G)" },
+        { t1: "1º I", t2: "2º E" },
+        { t1: "1º G", t2: "Melhor 3º (A/B/C/D/E/F)" },
+        { t1: "1º K", t2: "2º H" },
+        { t1: "1º H", t2: "Melhor 3º (A/B/C/D/E/G)" },
+        { t1: "2º F", t2: "2º G" },
+        { t1: "1º J", t2: "Melhor 3º (A/B/C/D/F/H)" },
+        { t1: "1º L", t2: "2º I" },
+        { t1: "2º J", t2: "2º K" },
+        { t1: "2º L", t2: "Melhor 3º (E/H/I/J/K)" }
+    ];
+
+    const LABELS_OITAVAS = [
+        { t1: "Venc. SF 1", t2: "Venc. SF 2" },
+        { t1: "Venc. SF 3", t2: "Venc. SF 4" },
+        { t1: "Venc. SF 5", t2: "Venc. SF 6" },
+        { t1: "Venc. SF 7", t2: "Venc. SF 8" },
+        { t1: "Venc. SF 9", t2: "Venc. SF 10" },
+        { t1: "Venc. SF 11", t2: "Venc. SF 12" },
+        { t1: "Venc. SF 13", t2: "Venc. SF 14" },
+        { t1: "Venc. SF 15", t2: "Venc. SF 16" }
+    ];
+
+    const LABELS_QUARTAS = [
+        { t1: "Venc. Oit. 1", t2: "Venc. Oit. 2" },
+        { t1: "Venc. Oit. 3", t2: "Venc. Oit. 4" },
+        { t1: "Venc. Oit. 5", t2: "Venc. Oit. 6" },
+        { t1: "Venc. Oit. 7", t2: "Venc. Oit. 8" }
+    ];
+
+    const LABELS_SEMIFINAIS = [
+        { t1: "Venc. Qua. 1", t2: "Venc. Qua. 2" },
+        { t1: "Venc. Qua. 3", t2: "Venc. Qua. 4" }
+    ];
+
+    const LABELS_FINAL = { t1: "Venc. Semi 1", t2: "Venc. Semi 2" };
+    const LABELS_TERCEIRO = { t1: "Perd. Semi 1", t2: "Perd. Semi 2" };
+
+    function getLabelsFase(faseId, idx) {
+        if (faseId === "segundaFase") return LABELS_SEGUNDA_FASE[idx];
+        if (faseId === "oitavas") return LABELS_OITAVAS[idx];
+        if (faseId === "quartas") return LABELS_QUARTAS[idx];
+        if (faseId === "semifinais") return LABELS_SEMIFINAIS[idx];
+        if (faseId === "final") return LABELS_FINAL;
+        if (faseId === "terceiro") return LABELS_TERCEIRO;
+        return null;
+    }
 
     // Informações ordenadas para mata-mata (já em ordem cronológica)
     const mataInfo = {
@@ -1044,8 +1112,22 @@
 
     function gerarLinhaMata(jogo, idx, faseId) {
         let infoExtra = jogo.info || (faseId === "segundaFase" ? mataInfo.segundaFase[idx] : faseId === "oitavas" ? mataInfo.oitavas[idx] : faseId==="quartas"?mataInfo.quartas[idx]:faseId==="semifinais"?mataInfo.semifinais[idx]:faseId==="final"?mataInfo.final:mataInfo.terceiro);
-        let time1Html = jogo.time1 ? `<span class="flag-emoji">${getFlag(jogo.time1)}</span> ${escapeHtml(jogo.time1)}` : "???";
-        let time2Html = jogo.time2 ? `<span class="flag-emoji">${getFlag(jogo.time2)}</span> ${escapeHtml(jogo.time2)}` : "???";
+        let labels = getLabelsFase(faseId, idx);
+        let time1Html, time2Html;
+        if (jogo.time1) {
+            time1Html = `<span class="flag-emoji">${getFlag(jogo.time1)}</span> ${escapeHtml(jogo.time1)}`;
+        } else if (labels) {
+            time1Html = `<span class="label-bracket">${labels.t1}</span>`;
+        } else {
+            time1Html = "❓";
+        }
+        if (jogo.time2) {
+            time2Html = `<span class="flag-emoji">${getFlag(jogo.time2)}</span> ${escapeHtml(jogo.time2)}`;
+        } else if (labels) {
+            time2Html = `<span class="label-bracket">${labels.t2}</span>`;
+        } else {
+            time2Html = "❓";
+        }
         return `<div class="confronto-mata"><div class="confronto-nome">${faseId.toUpperCase()} ${idx!==null?idx+1:''}</div>
                 <div class="mata-times"><span class="mata-time">${time1Html}</span><span class="vs">🆚</span><span class="mata-time">${time2Html}</span>
                 <span class="info-mata">📅 ${infoExtra}</span></div>
@@ -1084,22 +1166,23 @@
     }
     function handleGrupoChange(e) { let inp=e.target; let grupo=inp.dataset.grupo, jogoIdx=parseInt(inp.dataset.jogo), lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let jogo=gruposData[grupo]?.jogos[jogoIdx]; if(jogo){ if(lado==="casa") jogo.golsCasa=valor; else jogo.golsFora=valor; salvarStorage(); regenerarOitavasPorGrupos(); renderCompleto(); } }
     function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ if(lado==="1") mataData.segundaFase[idx].gols1=valor; else mataData.segundaFase[idx].gols2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].gols1=valor; else mataData.oitavas[idx].gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].gols1=valor; else mataData.quartas[idx].gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].gols1=valor; else mataData.semifinais[idx].gols2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.gols1=valor; else mataData.final.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.gols1=valor; else mataData.terceiroLugar.gols2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); renderGrupos(); } }
-    function attachGruposToggleEvents() { document.querySelectorAll('[data-toggle-grupo]').forEach(h=>h.addEventListener('click', function(){ let g=this.dataset.toggleGrupo; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=this.querySelector('.toggle-icon'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.grupos[g]=!col; salvarStorage(); } })); }
-    function attachFaseToggleEvents() { document.querySelectorAll('[data-toggle-fase]').forEach(h=>h.addEventListener('click', function(){ let f=this.dataset.toggleFase; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=this.querySelector('.fase-toggle'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.fases[f]=!col; salvarStorage(); } })); }
+    function attachGruposToggleEvents() { document.querySelectorAll('[data-toggle-grupo]').forEach(h=>h.addEventListener('click', function(){ let g=this.dataset.toggleGrupo; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=this.querySelector('.toggle-icon'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.grupos[g]=!col; salvarStorage(); atualizarBotoesToggle(); } })); }
+    function attachFaseToggleEvents() { document.querySelectorAll('[data-toggle-fase]').forEach(h=>h.addEventListener('click', function(){ let f=this.dataset.toggleFase; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=this.querySelector('.fase-toggle'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.fases[f]=!col; salvarStorage(); atualizarBotoesToggle(); } })); }
     function renderCompleto() { renderGrupos(); renderMataMata(); }
     function salvarStorage() { localStorage.setItem("copa2026_final_ordenado", JSON.stringify({ gruposData, mataData, expansionState, _v:2 })); }
     function carregarStorage() { let s=localStorage.getItem("copa2026_final_ordenado"); let migrar=false; if(s){ try{ let d=JSON.parse(s); if(d._v===2){ gruposData=d.gruposData; mataData=d.mataData; expansionState=d.expansionState; } else { mataData=d.mataData; expansionState=d.expansionState; migrar=true; } }catch(e){} } if(!gruposData||Object.keys(gruposData).length===0||migrar){ let oldGrupos=gruposData; initGruposData(); if(migrar&&oldGrupos){ for(let g in oldGrupos){ if(gruposData[g]){ for(let i=0;i<gruposData[g].jogos.length;i++){ let n=gruposData[g].jogos[i]; let a=(oldGrupos[g].jogos||[]).find(x=>x.timeCasa===n.timeCasa&&x.timeFora===n.timeFora); if(a){ n.golsCasa=a.golsCasa||""; n.golsFora=a.golsFora||""; } } } } } salvarStorage(); } regenerarOitavasPorGrupos(); }
     function resetAll() { if(confirm("Resetar todos os resultados?")){ initGruposData(); regenerarOitavasPorGrupos(); salvarStorage(); renderCompleto(); } }
+    function toggleGrupos() { let allExp = Object.keys(GRUPOS_REAIS).every(g => expansionState.grupos[g] !== false); expandAllGrupos(!allExp); atualizarBotoesToggle(); }
+    function toggleFases() { let fases = ["segundaFase","oitavas","quartas","semifinais","terceiro","final"]; let allExp = fases.every(f => expansionState.fases[f] !== false); expandAllFases(!allExp); atualizarBotoesToggle(); }
     function expandAllGrupos(expand) { for(let g in GRUPOS_REAIS){ expansionState.grupos[g]=expand; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=document.querySelector(`[data-toggle-grupo="${g}"] .toggle-icon`); if(c){ if(expand)c.classList.remove('collapsed'); else c.classList.add('collapsed'); if(icon) icon.innerHTML=expand?'▼':'▶'; } } salvarStorage(); renderCompleto(); }
     function expandAllFases(expand) { for(let f of ["segundaFase","oitavas","quartas","semifinais","terceiro","final"]){ expansionState.fases[f]=expand; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=document.querySelector(`[data-toggle-fase="${f}"] .fase-toggle`); if(c){ if(expand)c.classList.remove('collapsed'); else c.classList.add('collapsed'); if(icon) icon.innerHTML=expand?'▼':'▶'; } } salvarStorage(); renderCompleto(); }
+    function atualizarBotoesToggle() { let allGruposExp = Object.keys(GRUPOS_REAIS).every(g => expansionState.grupos[g] !== false); let btnG = document.getElementById('toggleGruposBtn'); if(btnG) btnG.innerHTML = allGruposExp ? '📁 Recolher grupos' : '📂 Expandir grupos'; let fases = ["segundaFase","oitavas","quartas","semifinais","terceiro","final"]; let allFasesExp = fases.every(f => expansionState.fases[f] !== false); let btnF = document.getElementById('toggleFasesBtn'); if(btnF) btnF.innerHTML = allFasesExp ? '🏆 Recolher fases' : '🏆 Expandir fases'; }
 
     document.getElementById("resetAllBtn")?.addEventListener("click", resetAll);
     document.getElementById("exportBtn")?.addEventListener("click", ()=>{ salvarStorage(); showToast("💾 Backup salvo! (O salvamento já é automático a cada alteração)"); });
     document.getElementById("exportBtnTop")?.addEventListener("click", ()=>{ salvarStorage(); showToast("💾 Backup salvo! (O salvamento já é automático)"); });
-    document.getElementById("expandAllGroupsBtn")?.addEventListener("click",()=>expandAllGrupos(true));
-    document.getElementById("collapseAllGroupsBtn")?.addEventListener("click",()=>expandAllGrupos(false));
-    document.getElementById("expandAllPhasesBtn")?.addEventListener("click",()=>expandAllFases(true));
-    document.getElementById("collapseAllPhasesBtn")?.addEventListener("click",()=>expandAllFases(false));
+    document.getElementById("toggleGruposBtn")?.addEventListener("click", toggleGrupos);
+    document.getElementById("toggleFasesBtn")?.addEventListener("click", toggleFases);
 
     // Menu de instruções recolhível
     document.getElementById("menuToggleBtn")?.addEventListener("click", function(){
@@ -1277,6 +1360,7 @@
 
     carregarStorage();
     renderCompleto();
+    atualizarBotoesToggle();
 
     // ========== 🔔 NOTIFICAÇÕES DE JOGOS (30 min antes) ==========
     const NOTIFICATIONS_STORAGE_KEY = 'copa2026_notificacoes';
