@@ -834,19 +834,25 @@
 
     let gruposData = {}; // será preenchido com times e jogos ordenados
     let mataData = {
-        oitavas: [], quartas: [], semifinais: [],
+        segundaFase: [], oitavas: [], quartas: [], semifinais: [],
         terceiroLugar: { time1: "", time2: "", gols1: "", gols2: "", info: "18/07 • 18:00 • Hard Rock Stadium, Miami Gardens" },
         final: { time1: "", time2: "", gols1: "", gols2: "", info: "19/07 • 16:00 • MetLife Stadium, East Rutherford" }
     };
-    let expansionState = { grupos: {}, fases: { oitavas: true, quartas: true, semifinais: true, terceiro: true, final: true } };
+    let expansionState = { grupos: {}, fases: { segundaFase: true, oitavas: true, quartas: true, semifinais: true, terceiro: true, final: true } };
 
     // Informações ordenadas para mata-mata (já em ordem cronológica)
     const mataInfo = {
-        oitavas: [
+        segundaFase: [
             "28/06 • 16:00 • SoFi Stadium, Inglewood", "29/06 • 14:00 • NRG Stadium, Houston", "29/06 • 17:30 • Gillette Stadium, Foxborough", "29/06 • 22:00 • Estádio BBVA, Guadalupe",
             "30/06 • 14:00 • AT&T Stadium, Arlington", "30/06 • 18:00 • MetLife Stadium, East Rutherford", "30/06 • 22:00 • Estádio Azteca, Cidade do México", "01/07 • 13:00 • Mercedes-Benz Stadium, Atlanta",
             "01/07 • 17:00 • Lumen Field, Seattle", "01/07 • 21:00 • Levi's Stadium, Santa Clara", "02/07 • 16:00 • SoFi Stadium, Inglewood", "02/07 • 20:00 • BMO Field, Toronto",
             "02/07 • 00:00 • BC Place, Vancouver", "03/07 • 15:00 • AT&T Stadium, Arlington", "03/07 • 19:00 • Hard Rock Stadium, Miami Gardens", "03/07 • 22:30 • Arrowhead Stadium, Kansas City"
+        ],
+        oitavas: [
+            "04/07 • 14:00 • Lincoln Financial Field, Filadélfia", "04/07 • 18:00 • MetLife Stadium, East Rutherford",
+            "05/07 • 17:00 • SoFi Stadium, Inglewood", "05/07 • 21:00 • Levi's Stadium, Santa Clara",
+            "06/07 • 16:00 • AT&T Stadium, Arlington", "06/07 • 21:00 • Lumen Field, Seattle",
+            "07/07 • 13:00 • Hard Rock Stadium, Miami Gardens", "07/07 • 17:00 • Arrowhead Stadium, Kansas City"
         ],
         quartas: [
             "09/07 • 17:00 • Gillette Stadium, Foxborough", "10/07 • 16:00 • SoFi Stadium, Inglewood",
@@ -918,7 +924,7 @@
         return [...primeiros, ...segundos, ...melhoresTerceiros];
     }
 
-    function gerarOitavas(classificados) {
+    function gerarSegundaFase(classificados) {
         let primeiros = classificados.filter(c => c.posicao === 1).sort((a,b)=>a.grupo.localeCompare(b.grupo));
         let segundos = classificados.filter(c => c.posicao === 2).sort((a,b)=>a.grupo.localeCompare(b.grupo));
         let terceiros = classificados.filter(c => c.posicao === 3).sort((a,b)=>a.grupo.localeCompare(b.grupo));
@@ -927,59 +933,76 @@
         let idxSeg = 0;
         while (confrontos.length < 16 && idxSeg+1 < segundos.length) { confrontos.push({ time1: segundos[idxSeg].time, time2: segundos[idxSeg+1].time }); idxSeg+=2; }
         while (confrontos.length < 16) confrontos.push({ time1: "Classificado", time2: "Classificado" });
-        let oitavas = [];
+        let sf = [];
         for (let i=0; i<16; i++) {
-            let antigo = mataData.oitavas[i] || {};
-            oitavas.push({
+            let antigo = mataData.segundaFase[i] || {};
+            sf.push({
                 id: i, time1: confrontos[i].time1, time2: confrontos[i].time2,
                 gols1: (antigo.time1 === confrontos[i].time1 && antigo.time2 === confrontos[i].time2) ? antigo.gols1 : "",
                 gols2: (antigo.time1 === confrontos[i].time1 && antigo.time2 === confrontos[i].time2) ? antigo.gols2 : "",
-                info: mataInfo.oitavas[i] || "Data a definir"
+                info: mataInfo.segundaFase[i] || "A definir"
             });
         }
-        return oitavas;
+        return sf;
     }
 
     function atualizarBracketCompleto() {
-        for (let j of mataData.oitavas) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
+        // Segunda Fase: determinar vencedores
+        for (let j of mataData.segundaFase) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
+        // Oitavas (8 jogos): vencedores da Segunda Fase
+        let oitavas = [];
+        for (let i=0; i<4; i++) {
+            let v1 = mataData.segundaFase[i*4]?.vencedor || mataData.segundaFase[i*4]?.time1;
+            let v2 = mataData.segundaFase[i*4+1]?.vencedor || mataData.segundaFase[i*4+1]?.time2;
+            let ex = mataData.oitavas[i*2]||{};
+            oitavas.push({ time1: v1||ex.time1||"", time2: v2||ex.time2||"", gols1: ex.gols1||"", gols2: ex.gols2||"", info: mataInfo.oitavas[i*2] || "Oitavas", vencedor:null });
+            v1 = mataData.segundaFase[i*4+2]?.vencedor || mataData.segundaFase[i*4+2]?.time1;
+            v2 = mataData.segundaFase[i*4+3]?.vencedor || mataData.segundaFase[i*4+3]?.time2;
+            ex = mataData.oitavas[i*2+1]||{};
+            oitavas.push({ time1: v1||ex.time1||"", time2: v2||ex.time2||"", gols1: ex.gols1||"", gols2: ex.gols2||"", info: mataInfo.oitavas[i*2+1] || "Oitavas", vencedor:null });
+        }
+        for (let j of oitavas) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
+        mataData.oitavas = oitavas;
+        // Quartas (4 jogos): vencedores das Oitavas
         let quartas = [];
-        for (let i=0;i<8;i++) { let v1 = mataData.oitavas[i*2]?.vencedor || mataData.oitavas[i*2]?.time1; let v2 = mataData.oitavas[i*2+1]?.vencedor || mataData.oitavas[i*2+1]?.time2; let ex = mataData.quartas[i]||{}; quartas.push({ time1: v1||ex.time1||"", time2: v2||ex.time2||"", gols1: ex.gols1||"", gols2: ex.gols2||"", info: mataInfo.quartas[i] || "Quartas", vencedor:null }); }
+        for (let i=0; i<4; i++) { let v1 = mataData.oitavas[i*2]?.vencedor || mataData.oitavas[i*2]?.time1; let v2 = mataData.oitavas[i*2+1]?.vencedor || mataData.oitavas[i*2+1]?.time2; let ex = mataData.quartas[i]||{}; quartas.push({ time1: v1||ex.time1||"", time2: v2||ex.time2||"", gols1: ex.gols1||"", gols2: ex.gols2||"", info: mataInfo.quartas[i] || "Quartas", vencedor:null }); }
         for (let q of quartas) { let g1 = (q.gols1!="" && !isNaN(parseInt(q.gols1)))?parseInt(q.gols1):null; let g2 = (q.gols2!="" && !isNaN(parseInt(q.gols2)))?parseInt(q.gols2):null; q.vencedor = (g1!==null && g2!==null) ? (g1>g2?q.time1:g2>g1?q.time2:null) : null; }
         mataData.quartas = quartas;
+        // Semifinais
         let semis = [];
-        for (let i=0;i<4;i++) { let v1 = mataData.quartas[i*2]?.vencedor || mataData.quartas[i*2]?.time1; let v2 = mataData.quartas[i*2+1]?.vencedor || mataData.quartas[i*2+1]?.time2; let ex = mataData.semifinais[i]||{}; semis.push({ time1: v1||ex.time1||"", time2: v2||ex.time2||"", gols1: ex.gols1||"", gols2: ex.gols2||"", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null }); }
+        for (let i=0; i<2; i++) { let v1 = mataData.quartas[i*2]?.vencedor || mataData.quartas[i*2]?.time1; let v2 = mataData.quartas[i*2+1]?.vencedor || mataData.quartas[i*2+1]?.time2; let ex = mataData.semifinais[i]||{}; semis.push({ time1: v1||ex.time1||"", time2: v2||ex.time2||"", gols1: ex.gols1||"", gols2: ex.gols2||"", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null }); }
         for (let s of semis) { let g1 = (s.gols1!="" && !isNaN(parseInt(s.gols1)))?parseInt(s.gols1):null; let g2 = (s.gols2!="" && !isNaN(parseInt(s.gols2)))?parseInt(s.gols2):null; s.vencedor = (g1!==null && g2!==null) ? (g1>g2?s.time1:g2>g1?s.time2:null) : null; }
         mataData.semifinais = semis;
+        // Final
         let finalEx = mataData.final;
         mataData.final = { time1: semis[0]?.vencedor || semis[0]?.time1 || finalEx?.time1, time2: semis[1]?.vencedor || semis[1]?.time2 || finalEx?.time2, gols1: finalEx?.gols1||"", gols2: finalEx?.gols2||"", info: mataInfo.final, vencedor: null };
         let f = mataData.final; let gf1 = (f.gols1!="" && !isNaN(parseInt(f.gols1)))?parseInt(f.gols1):null; let gf2 = (f.gols2!="" && !isNaN(parseInt(f.gols2)))?parseInt(f.gols2):null; f.vencedor = (gf1!==null && gf2!==null) ? (gf1>gf2?f.time1:gf2>gf1?f.time2:null) : null;
+        // Terceiro lugar (perdedores das semis)
         let tercEx = mataData.terceiroLugar;
-        mataData.terceiroLugar = { time1: semis[2]?.vencedor || semis[2]?.time1 || tercEx?.time1, time2: semis[3]?.vencedor || semis[3]?.time2 || tercEx?.time2, gols1: tercEx?.gols1||"", gols2: tercEx?.gols2||"", info: mataInfo.terceiro, vencedor: null };
+        let perdedorSemi0 = (semis[0]?.gols1!==undefined && semis[0]?.gols1!=="" && semis[0]?.vencedor) ? (semis[0].vencedor===semis[0].time1 ? semis[0].time2 : semis[0].time1) : (semis[0]?.time2 || tercEx?.time1);
+        let perdedorSemi1 = (semis[1]?.gols1!==undefined && semis[1]?.gols1!=="" && semis[1]?.vencedor) ? (semis[1].vencedor===semis[1].time1 ? semis[1].time2 : semis[1].time1) : (semis[1]?.time1 || tercEx?.time2);
+        mataData.terceiroLugar = { time1: perdedorSemi0||tercEx?.time1||"", time2: perdedorSemi1||tercEx?.time2||"", gols1: tercEx?.gols1||"", gols2: tercEx?.gols2||"", info: mataInfo.terceiro, vencedor: null };
     }
 
     function regenerarOitavasPorGrupos() {
         if (!temJogosRealizados()) {
-            mataData.oitavas = [];
+            mataData.segundaFase = [];
             for (let i = 0; i < 16; i++) {
-                mataData.oitavas.push({
-                    id: i, time1: "", time2: "",
-                    gols1: "", gols2: "",
-                    info: mataInfo.oitavas[i] || "A definir"
-                });
+                mataData.segundaFase.push({ id: i, time1: "", time2: "", gols1: "", gols2: "", info: mataInfo.segundaFase[i] || "A definir" });
             }
             atualizarBracketCompleto();
             return;
         }
         let classif = calcularClassificados();
-        let novas = gerarOitavas(classif);
+        let novas = gerarSegundaFase(classif);
         for (let i = 0; i < novas.length; i++) {
-            let antigo = mataData.oitavas[i];
+            let antigo = mataData.segundaFase[i];
             if (antigo && antigo.time1 === novas[i].time1 && antigo.time2 === novas[i].time2) {
                 novas[i].gols1 = antigo.gols1;
                 novas[i].gols2 = antigo.gols2;
             }
         }
-        mataData.oitavas = novas;
+        mataData.segundaFase = novas;
         atualizarBracketCompleto();
     }
 
@@ -1020,7 +1043,7 @@
     }
 
     function gerarLinhaMata(jogo, idx, faseId) {
-        let infoExtra = jogo.info || (faseId === "oitavas" ? mataInfo.oitavas[idx] : faseId==="quartas"?mataInfo.quartas[idx]:faseId==="semifinais"?mataInfo.semifinais[idx]:faseId==="final"?mataInfo.final:mataInfo.terceiro);
+        let infoExtra = jogo.info || (faseId === "segundaFase" ? mataInfo.segundaFase[idx] : faseId === "oitavas" ? mataInfo.oitavas[idx] : faseId==="quartas"?mataInfo.quartas[idx]:faseId==="semifinais"?mataInfo.semifinais[idx]:faseId==="final"?mataInfo.final:mataInfo.terceiro);
         let time1Html = jogo.time1 ? `<span class="flag-emoji">${getFlag(jogo.time1)}</span> ${escapeHtml(jogo.time1)}` : "???";
         let time2Html = jogo.time2 ? `<span class="flag-emoji">${getFlag(jogo.time2)}</span> ${escapeHtml(jogo.time2)}` : "???";
         return `<div class="confronto-mata"><div class="confronto-nome">${faseId.toUpperCase()} ${idx!==null?idx+1:''}</div>
@@ -1034,6 +1057,7 @@
         let container = document.getElementById("mataMataContainer");
         if (!container) return;
         let fases = [
+            { id:"segundaFase", titulo:"🏟️ SEGUNDA FASE (32 avos)", dados:mataData.segundaFase, tipo:"list" },
             { id:"oitavas", titulo:"⚔️ OITAVAS DE FINAL", dados:mataData.oitavas, tipo:"list" },
             { id:"quartas", titulo:"🏆 QUARTAS DE FINAL", dados:mataData.quartas, tipo:"list" },
             { id:"semifinais", titulo:"🥇 SEMIFINAIS", dados:mataData.semifinais, tipo:"list" },
@@ -1059,7 +1083,7 @@
         document.querySelectorAll('.mata-gol1, .mata-gol2').forEach(inp => { inp.removeEventListener('change', handleMataPlacar); inp.addEventListener('change', handleMataPlacar); });
     }
     function handleGrupoChange(e) { let inp=e.target; let grupo=inp.dataset.grupo, jogoIdx=parseInt(inp.dataset.jogo), lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let jogo=gruposData[grupo]?.jogos[jogoIdx]; if(jogo){ if(lado==="casa") jogo.golsCasa=valor; else jogo.golsFora=valor; salvarStorage(); regenerarOitavasPorGrupos(); renderCompleto(); } }
-    function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].gols1=valor; else mataData.oitavas[idx].gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].gols1=valor; else mataData.quartas[idx].gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].gols1=valor; else mataData.semifinais[idx].gols2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.gols1=valor; else mataData.final.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.gols1=valor; else mataData.terceiroLugar.gols2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); renderGrupos(); } }
+    function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ if(lado==="1") mataData.segundaFase[idx].gols1=valor; else mataData.segundaFase[idx].gols2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].gols1=valor; else mataData.oitavas[idx].gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].gols1=valor; else mataData.quartas[idx].gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].gols1=valor; else mataData.semifinais[idx].gols2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.gols1=valor; else mataData.final.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.gols1=valor; else mataData.terceiroLugar.gols2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); renderGrupos(); } }
     function attachGruposToggleEvents() { document.querySelectorAll('[data-toggle-grupo]').forEach(h=>h.addEventListener('click', function(){ let g=this.dataset.toggleGrupo; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=this.querySelector('.toggle-icon'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.grupos[g]=!col; salvarStorage(); } })); }
     function attachFaseToggleEvents() { document.querySelectorAll('[data-toggle-fase]').forEach(h=>h.addEventListener('click', function(){ let f=this.dataset.toggleFase; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=this.querySelector('.fase-toggle'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.fases[f]=!col; salvarStorage(); } })); }
     function renderCompleto() { renderGrupos(); renderMataMata(); }
@@ -1067,7 +1091,7 @@
     function carregarStorage() { let s=localStorage.getItem("copa2026_final_ordenado"); let migrar=false; if(s){ try{ let d=JSON.parse(s); if(d._v===2){ gruposData=d.gruposData; mataData=d.mataData; expansionState=d.expansionState; } else { mataData=d.mataData; expansionState=d.expansionState; migrar=true; } }catch(e){} } if(!gruposData||Object.keys(gruposData).length===0||migrar){ let oldGrupos=gruposData; initGruposData(); if(migrar&&oldGrupos){ for(let g in oldGrupos){ if(gruposData[g]){ for(let i=0;i<gruposData[g].jogos.length;i++){ let n=gruposData[g].jogos[i]; let a=(oldGrupos[g].jogos||[]).find(x=>x.timeCasa===n.timeCasa&&x.timeFora===n.timeFora); if(a){ n.golsCasa=a.golsCasa||""; n.golsFora=a.golsFora||""; } } } } } salvarStorage(); } regenerarOitavasPorGrupos(); }
     function resetAll() { if(confirm("Resetar todos os resultados?")){ initGruposData(); regenerarOitavasPorGrupos(); salvarStorage(); renderCompleto(); } }
     function expandAllGrupos(expand) { for(let g in GRUPOS_REAIS){ expansionState.grupos[g]=expand; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=document.querySelector(`[data-toggle-grupo="${g}"] .toggle-icon`); if(c){ if(expand)c.classList.remove('collapsed'); else c.classList.add('collapsed'); if(icon) icon.innerHTML=expand?'▼':'▶'; } } salvarStorage(); renderCompleto(); }
-    function expandAllFases(expand) { for(let f of ["oitavas","quartas","semifinais","terceiro","final"]){ expansionState.fases[f]=expand; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=document.querySelector(`[data-toggle-fase="${f}"] .fase-toggle`); if(c){ if(expand)c.classList.remove('collapsed'); else c.classList.add('collapsed'); if(icon) icon.innerHTML=expand?'▼':'▶'; } } salvarStorage(); renderCompleto(); }
+    function expandAllFases(expand) { for(let f of ["segundaFase","oitavas","quartas","semifinais","terceiro","final"]){ expansionState.fases[f]=expand; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=document.querySelector(`[data-toggle-fase="${f}"] .fase-toggle`); if(c){ if(expand)c.classList.remove('collapsed'); else c.classList.add('collapsed'); if(icon) icon.innerHTML=expand?'▼':'▶'; } } salvarStorage(); renderCompleto(); }
 
     document.getElementById("resetAllBtn")?.addEventListener("click", resetAll);
     document.getElementById("exportBtn")?.addEventListener("click", ()=>{ salvarStorage(); showToast("💾 Backup salvo! (O salvamento já é automático a cada alteração)"); });
@@ -1296,13 +1320,14 @@
         }
         // Também adiciona jogos do mata-mata
         const fasesMata = [
+            { dados: mataData.segundaFase, info: mataInfo.segundaFase },
             { dados: mataData.oitavas, info: mataInfo.oitavas },
             { dados: mataData.quartas, info: mataInfo.quartas },
             { dados: mataData.semifinais, info: mataInfo.semifinais },
             { dados: [mataData.terceiroLugar], info: [mataInfo.terceiro] },
             { dados: [mataData.final], info: [mataInfo.final] }
         ];
-        const nomesFase = ['Oitavas', 'Quartas', 'Semifinal', '3º Lugar', 'Final'];
+        const nomesFase = ['2ª Fase', 'Oitavas', 'Quartas', 'Semifinal', '3º Lugar', 'Final'];
         for (let fi = 0; fi < fasesMata.length; fi++) {
             const fase = fasesMata[fi];
             for (let i = 0; i < fase.dados.length; i++) {
