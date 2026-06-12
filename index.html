@@ -1127,12 +1127,14 @@
         const mapa = new Map();
         const todos = coletarTodosJogos ? coletarTodosJogos() : [];
         for (const jogo of todos) {
-            if (!jogo.timestamp) continue;
-            // Converter timestamp UTC para horário de Brasília (UTC-3)
-            const d = new Date(jogo.timestamp - 3 * 60 * 60 * 1000);
-            const key = `${d.getUTCDate().toString().padStart(2,'0')}/${(d.getUTCMonth()+1).toString().padStart(2,'0')}`;
+            if (!jogo.dataHora) continue;
+            // Extrair data direto da string BRT (formato "dd/mm • HH:MM")
+            const key = jogo.dataHora.split(' • ')[0]; // "13/06"
+            if (!key || key.length < 5) continue;
+            const [dia, mes] = key.split('/').map(Number);
+            if (!dia || !mes) continue;
             if (!mapa.has(key)) {
-                mapa.set(key, { dataStr: key, dataObj: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())), jogos: [] });
+                mapa.set(key, { dataStr: key, dataObj: new Date(Date.UTC(2026, mes-1, dia)), jogos: [] });
             }
             mapa.get(key).jogos.push(jogo);
         }
