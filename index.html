@@ -554,6 +554,19 @@
             white-space: nowrap;
             flex-shrink: 0;
         }
+        .calendario-hoje-btn {
+            display: block;
+            width: 100%;
+            background: #2f735a;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
         .calendario-vazio {
             text-align: center;
             color: #8aa;
@@ -610,6 +623,7 @@
                     <div class="calendario-data" id="calDataTitulo"></div>
                     <button class="calendario-nav-btn" id="calNextBtn" title="Próximo dia">▶</button>
                 </div>
+                <button class="calendario-hoje-btn" id="calHojeBtn" style="display:none;">📅 Ir para hoje</button>
                 <div class="calendario-jogos" id="calJogosLista"></div>
             </div>
         </div>
@@ -1083,6 +1097,7 @@
     // ========== 📅 CALENDÁRIO DE JOGOS ==========
     let calendarioDatas = []; // [{dataStr, dataObj, jogos: [...]}]
     let calendarioIdxAtual = 0;
+    let calendarioInicializado = false;
 
     function construirCalendario() {
         const mapa = new Map();
@@ -1126,19 +1141,26 @@
             document.getElementById('calNextBtn').disabled = true;
             return;
         }
-        // Encontrar hoje nos dados (horário de Brasília)
-        const agora = new Date();
-        const hojeBRT = new Date(agora.getTime() - 3 * 60 * 60 * 1000); // UTC-3
-        const hojeKey = `${hojeBRT.getUTCDate().toString().padStart(2,'0')}/${(hojeBRT.getUTCMonth()+1).toString().padStart(2,'0')}`;
-        let idxHoje = calendarioDatas.findIndex(d => d.dataStr === hojeKey);
-        // Se hoje não tem jogo, pega o próximo dia com jogo
-        if (idxHoje === -1) {
-            const hojeTs = Date.UTC(hojeBRT.getUTCFullYear(), hojeBRT.getUTCMonth(), hojeBRT.getUTCDate());
-            idxHoje = calendarioDatas.findIndex(d => d.dataObj.getTime() >= hojeTs);
+        // Na primeira vez, encontrar hoje; depois mantém a posição
+        if (!calendarioInicializado) {
+            const agora = new Date();
+            const hojeBRT = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+            const hojeKey = `${hojeBRT.getUTCDate().toString().padStart(2,'0')}/${(hojeBRT.getUTCMonth()+1).toString().padStart(2,'0')}`;
+            let idxHoje = calendarioDatas.findIndex(d => d.dataStr === hojeKey);
+            if (idxHoje === -1) {
+                const hojeTs = Date.UTC(hojeBRT.getUTCFullYear(), hojeBRT.getUTCMonth(), hojeBRT.getUTCDate());
+                idxHoje = calendarioDatas.findIndex(d => d.dataObj.getTime() >= hojeTs);
+            }
+            if (idxHoje === -1) idxHoje = calendarioDatas.length - 1;
+            calendarioIdxAtual = idxHoje;
+            calendarioInicializado = true;
         }
-        // Se ainda não encontrou (todos no passado), pega o último
-        if (idxHoje === -1) idxHoje = calendarioDatas.length - 1;
-        calendarioIdxAtual = idxHoje;
+        // Botão "Hoje" força reinicializar
+        if (calendarioIdxAtual === -1) {
+            calendarioInicializado = false;
+            renderCalendario();
+            return;
+        }
 
         // Ajustar índice se necessário
         if (calendarioIdxAtual >= calendarioDatas.length) calendarioIdxAtual = calendarioDatas.length - 1;
@@ -1168,11 +1190,47 @@
             </div>`;
         }
         document.getElementById('calJogosLista').innerHTML = html;
+        atualizarBotaoHoje();
     }
 
     // Navegação do calendário
     document.getElementById('calPrevBtn')?.addEventListener('click', () => irParaData(calendarioIdxAtual - 1));
     document.getElementById('calNextBtn')?.addEventListener('click', () => irParaData(calendarioIdxAtual + 1));
+
+    // Botão "Ir para hoje"
+    document.getElementById('calHojeBtn')?.addEventListener('click', () => {
+        calendarioIdxAtual = -1; // força recalcular hoje no render
+        renderCalendario();
+    });
+
+    function atualizarBotaoHoje() {
+        const btn = document.getElementById('calHojeBtn');
+        if (!btn || calendarioDatas.length === 0) return;
+        const agora = new Date();
+        const hojeBRT = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+        const hojeKey = `${hojeBRT.getUTCDate().toString().padStart(2,'0')}/${(hojeBRT.getUTCMonth()+1).toString().padStart(2,'0')}`;
+        const diaAtual = calendarioDatas[calendarioIdxAtual];
+        if (diaAtual && diaAtual.dataStr !== hojeKey) {
+            btn.style.display = 'block';
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+
+    // Swipe no calendário (mobile)
+    (function configurarSwipeCalendario() {
+        const lista = document.getElementById('calJogosLista');
+        if (!lista) return;
+        let touchStartX = 0;
+        lista.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        lista.addEventListener('touchend', (e) => {
+            const diff = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) irParaData(calendarioIdxAtual - 1); // swipe direita → anterior
+                else irParaData(calendarioIdxAtual + 1); // swipe esquerda → próximo
+            }
+        });
+    })();
 
     // Abas do menu
     document.querySelectorAll('.menu-tab').forEach(tab => {
