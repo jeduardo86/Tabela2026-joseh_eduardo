@@ -11,6 +11,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Copa 2026">
+    <link rel="manifest" href="manifest.json">
+    <meta name="description" content="Tabela completa da Copa do Mundo 2026 com datas, horários, bandeiras, classificação e mata-mata automático. Instale como app!">
     <style>
         * {
             box-sizing: border-box;
@@ -332,6 +334,55 @@
             cursor: pointer;
             white-space: nowrap;
         }
+        .btn-install {
+            background: linear-gradient(135deg, #e6b12e, #f5b642);
+            color: #0c1f1f;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 24px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            white-space: nowrap;
+            animation: pulse-install 2s ease-in-out infinite;
+            display: none;
+        }
+        .btn-install.show { display: inline-block; }
+        @keyframes pulse-install {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(230, 177, 46, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(230, 177, 46, 0); }
+        }
+        .offline-banner {
+            display: none;
+            background: #974b2e;
+            color: white;
+            text-align: center;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        .offline-banner.show { display: block; }
+        .pwa-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #2f735a;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            z-index: 9999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .pwa-toast.show { transform: translateX(-50%) translateY(0); }
+        .pwa-toast.error { background: #974b2e; }
 
         /* Collapsible instructions menu */
         .menu-instrucoes {
@@ -367,9 +418,11 @@
 <div class="container">
     <!-- CABEÇALHO FIXO -->
     <div class="sticky-header">
+        <div id="offlineBanner" class="offline-banner">📡 Sem internet — dados salvos localmente</div>
         <div class="header-top-row">
             <h1 style="margin:0; font-size:1.4rem;">🏆 COPA DO MUNDO 2026 · <span class="badge-regra">🇧🇷 Ordenado</span></h1>
             <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn-install" id="installBtn" title="Instalar app">📲 Instalar</button>
                 <button class="btn-salvar-top" id="exportBtnTop" title="Salvar dados">💾 Salvar</button>
                 <button class="btn-menu-toggle" id="menuToggleBtn" title="Instruções">☰</button>
             </div>
@@ -774,6 +827,152 @@
 
     carregarStorage();
     renderCompleto();
+
+    // ========== PWA: Service Worker ==========
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/Tabela2026-joseh_eduardo/sw.js', { scope: '/Tabela2026-joseh_eduardo/' })
+                .then(reg => {
+                    console.log('[PWA] Service Worker registrado:', reg.scope);
+                    // Verificar se há atualização pendente
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    showToast('🔄 Nova versão disponível! Toque para atualizar.', false, () => {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    });
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch(err => console.warn('[PWA] Falha ao registrar SW:', err));
+        });
+    }
+
+    // ========== PWA: Instalação ==========
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('installBtn');
+
+    // Verificar se já está instalado
+    function isStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone
+            || document.referrer.includes('android-app://');
+    }
+
+    // Esconder botão se já estiver em modo standalone
+    if (isStandalone()) {
+        if (installBtn) installBtn.style.display = 'none';
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn && !isStandalone()) {
+            installBtn.classList.add('show');
+        }
+        console.log('[PWA] beforeinstallprompt capturado — app instalável');
+    });
+
+    if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                showToast('📲 Para instalar, use a opção "Adicionar à tela inicial" no menu do navegador', false);
+                return;
+            }
+            installBtn.classList.remove('show');
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log('[PWA] Resultado da instalação:', outcome);
+            if (outcome === 'accepted') {
+                showToast('✅ App instalado com sucesso! 🎉', false);
+                installBtn.style.display = 'none';
+            }
+            deferredPrompt = null;
+        });
+    }
+
+    // Esconder botão após instalação
+    window.addEventListener('appinstalled', () => {
+        console.log('[PWA] App instalado!');
+        if (installBtn) installBtn.style.display = 'none';
+        deferredPrompt = null;
+    });
+
+    // ========== PWA: Detecção Offline/Online ==========
+    const offlineBanner = document.getElementById('offlineBanner');
+    function updateOnlineStatus() {
+        if (!navigator.onLine) {
+            if (offlineBanner) offlineBanner.classList.add('show');
+            showToast('📡 Você está offline — usando dados salvos', true);
+        } else {
+            if (offlineBanner) {
+                offlineBanner.classList.remove('show');
+                // Mostrar brevemente que voltou
+                offlineBanner.textContent = '✅ Conectado! Dados sincronizados';
+                offlineBanner.classList.add('show');
+                setTimeout(() => {
+                    offlineBanner.classList.remove('show');
+                    offlineBanner.textContent = '📡 Sem internet — dados salvos localmente';
+                }, 2000);
+            }
+        }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
+    // ========== PWA: Toast de notificação ==========
+    let toastTimer = null;
+    function showToast(msg, isError = false, onClick = null) {
+        let toast = document.getElementById('pwaToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'pwaToast';
+            toast.className = 'pwa-toast';
+            document.body.appendChild(toast);
+        }
+        if (toastTimer) clearTimeout(toastTimer);
+        toast.textContent = msg;
+        toast.className = 'pwa-toast' + (isError ? ' error' : '');
+        toast.classList.add('show');
+        toast.onclick = () => {
+            toast.classList.remove('show');
+            if (onClick) onClick();
+        };
+        toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+
+    // ========== PWA: Web Share API ==========
+    // Adiciona compartilhamento ao botão Salvar (long press ou menu)
+    if (navigator.share) {
+        const addShareToSave = () => {
+            const saveBtns = [document.getElementById('exportBtn'), document.getElementById('exportBtnTop')];
+            saveBtns.forEach(btn => {
+                if (btn && !btn.dataset.shareAdded) {
+                    btn.dataset.shareAdded = '1';
+                    btn.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        navigator.share({
+                            title: '🏆 Copa 2026 - Tabela Completa',
+                            text: 'Confira a tabela da Copa do Mundo 2026 com mata-mata automático!',
+                            url: window.location.href
+                        }).catch(() => {});
+                    });
+                }
+            });
+        };
+        addShareToSave();
+    }
+
+    console.log('[PWA] %c🏆 Copa 2026 PWA %cpronto! %c📲 Instalável • 🔌 Offline • 🚀 Rápido',
+        'font-size:1.2em;', '', 'color:#f5b642;');
 </script>
 </body>
 </html>
