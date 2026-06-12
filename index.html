@@ -1256,6 +1256,7 @@
     const NOTIFICATIONS_STORAGE_KEY = 'copa2026_notificacoes';
     let notificacoesAtivas = false;
     let notificacaoTimers = [];
+    let toastTimer = null; // declarado antes do uso pelo showToast
 
     function getNotificationState() {
         try {
@@ -1607,7 +1608,6 @@
     updateOnlineStatus();
 
     // ========== PWA: Toast de notificação ==========
-    let toastTimer = null;
     function showToast(msg, isError = false, onClick = null) {
         let toast = document.getElementById('pwaToast');
         if (!toast) {
