@@ -450,7 +450,7 @@
             <div style="display:flex; gap:8px; align-items:center;">
                 <button class="btn-notificar" id="notificarBtn" title="Ativar notificações 30min antes dos jogos">🔕</button>
                 <button class="btn-install" id="installBtn" title="Instalar app">📲 Instalar</button>
-                <button class="btn-salvar-top" id="exportBtnTop" title="Salvar dados">💾 Salvar</button>
+                <button class="btn-salvar-top" id="exportBtnTop" title="Backup manual (o app salva automaticamente)">💾 Backup</button>
                 <button class="btn-menu-toggle" id="menuToggleBtn" title="Instruções">☰</button>
             </div>
         </div>
@@ -483,7 +483,7 @@
 
     <div class="footer-actions">
         <button class="btn-reset" id="resetAllBtn">🔄 Resetar todos os resultados</button>
-        <button class="btn-salvar" id="exportBtn">💾 Salvar / Backup</button>
+        <button class="btn-salvar" id="exportBtn">💾 Backup (auto-salvo ✅)</button>
     </div>
     <div class="nota-pe">
         📅 Datas e horários em Brasília (BRT) • Locais oficiais • Clique nos cabeçalhos para expandir/recolher
@@ -835,8 +835,8 @@
     function expandAllFases(expand) { for(let f of ["oitavas","quartas","semifinais","terceiro","final"]){ expansionState.fases[f]=expand; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=document.querySelector(`[data-toggle-fase="${f}"] .fase-toggle`); if(c){ if(expand)c.classList.remove('collapsed'); else c.classList.add('collapsed'); if(icon) icon.innerHTML=expand?'▼':'▶'; } } salvarStorage(); renderCompleto(); }
 
     document.getElementById("resetAllBtn")?.addEventListener("click", resetAll);
-    document.getElementById("exportBtn")?.addEventListener("click", ()=>{ salvarStorage(); alert("✅ Dados salvos!"); });
-    document.getElementById("exportBtnTop")?.addEventListener("click", ()=>{ salvarStorage(); alert("✅ Dados salvos!"); });
+    document.getElementById("exportBtn")?.addEventListener("click", ()=>{ salvarStorage(); showToast("💾 Backup salvo! (O salvamento já é automático a cada alteração)"); });
+    document.getElementById("exportBtnTop")?.addEventListener("click", ()=>{ salvarStorage(); showToast("💾 Backup salvo! (O salvamento já é automático)"); });
     document.getElementById("expandAllGroupsBtn")?.addEventListener("click",()=>expandAllGrupos(true));
     document.getElementById("collapseAllGroupsBtn")?.addEventListener("click",()=>expandAllGrupos(false));
     document.getElementById("expandAllPhasesBtn")?.addEventListener("click",()=>expandAllFases(true));
