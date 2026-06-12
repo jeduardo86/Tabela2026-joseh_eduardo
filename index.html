@@ -1126,6 +1126,20 @@
             document.getElementById('calNextBtn').disabled = true;
             return;
         }
+        // Encontrar hoje nos dados (horário de Brasília)
+        const agora = new Date();
+        const hojeBRT = new Date(agora.getTime() - 3 * 60 * 60 * 1000); // UTC-3
+        const hojeKey = `${hojeBRT.getUTCDate().toString().padStart(2,'0')}/${(hojeBRT.getUTCMonth()+1).toString().padStart(2,'0')}`;
+        let idxHoje = calendarioDatas.findIndex(d => d.dataStr === hojeKey);
+        // Se hoje não tem jogo, pega o próximo dia com jogo
+        if (idxHoje === -1) {
+            const hojeTs = Date.UTC(hojeBRT.getUTCFullYear(), hojeBRT.getUTCMonth(), hojeBRT.getUTCDate());
+            idxHoje = calendarioDatas.findIndex(d => d.dataObj.getTime() >= hojeTs);
+        }
+        // Se ainda não encontrou (todos no passado), pega o último
+        if (idxHoje === -1) idxHoje = calendarioDatas.length - 1;
+        calendarioIdxAtual = idxHoje;
+
         // Ajustar índice se necessário
         if (calendarioIdxAtual >= calendarioDatas.length) calendarioIdxAtual = calendarioDatas.length - 1;
         if (calendarioIdxAtual < 0) calendarioIdxAtual = 0;
