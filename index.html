@@ -604,14 +604,6 @@
                 <button class="btn-menu-toggle" id="menuToggleBtn" title="Instruções">☰</button>
             </div>
         </div>
-        <div class="info-regras" style="margin-bottom:8px;">
-            🗓️ <strong>Jogos ordenados por data e horário</strong> • 🇧🇷 Bandeiras • ⚽ Classificação automática • 🏆 Mata-mata automático • 💾 Salvamento automático
-        </div>
-        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-            <button id="toggleGruposBtn" class="btn-expand-all">📁 Recolher grupos</button>
-            <button id="toggleFasesBtn" class="btn-expand-all">🏆 Recolher fases</button>
-            <span id="relogioDataHora" style="margin-left: auto; font-size: 0.85rem; opacity: 0.8; white-space: nowrap;">📅 12/06/2026 00:00</span>
-        </div>
         <!-- Menu recolhível de instruções -->
         <div class="menu-instrucoes" id="menuInstrucoes">
             <div class="menu-tabs">
@@ -639,6 +631,16 @@
                 <button class="calendario-hoje-btn" id="calHojeBtn" style="display:none;">📅 Ir para hoje</button>
                 <div class="calendario-jogos" id="calJogosLista"></div>
             </div>
+        </div>
+        <div class="info-regras" style="margin-bottom:8px;">
+            🗓️ <strong>Jogos ordenados por data e horário</strong> • 🇧🇷 Bandeiras • ⚽ Classificação automática • 🏆 Mata-mata automático • 💾 Salvamento automático
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+            <button id="toggleGruposBtn" class="btn-expand-all">📁 Recolher grupos</button>
+            <button id="toggleFasesBtn" class="btn-expand-all">🏆 Recolher fases</button>
+            <button id="hideGruposBtn" class="btn-expand-all" style="background:#1a4a4a;" title="Ocultar/mostrar fase de grupos">👁️ Ocultar grupos</button>
+            <button id="hideMataMataBtn" class="btn-expand-all" style="background:#1a4a4a;" title="Ocultar/mostrar mata-mata">👁️ Ocultar mata-mata</button>
+            <span id="relogioDataHora" style="margin-left: auto; font-size: 0.85rem; opacity: 0.8; white-space: nowrap;">📅 12/06/2026 00:00</span>
         </div>
     </div>
 
@@ -1194,6 +1196,28 @@
     document.getElementById("exportBtnTop")?.addEventListener("click", ()=>{ salvarStorage(); showToast("💾 Backup salvo! (O salvamento já é automático)"); });
     document.getElementById("toggleGruposBtn")?.addEventListener("click", toggleGrupos);
     document.getElementById("toggleFasesBtn")?.addEventListener("click", toggleFases);
+
+    // Botões de ocultar/mostrar seções inteiras
+    let gruposVisible = true;
+    let mataMataVisible = true;
+    function toggleHideGrupos() {
+        let container = document.getElementById("gruposContainer");
+        let btn = document.getElementById("hideGruposBtn");
+        if (!container || !btn) return;
+        gruposVisible = !gruposVisible;
+        container.style.display = gruposVisible ? "" : "none";
+        btn.innerHTML = gruposVisible ? "👁️ Ocultar grupos" : "👁️ Mostrar grupos";
+    }
+    function toggleHideMataMata() {
+        let container = document.getElementById("mataMataContainer");
+        let btn = document.getElementById("hideMataMataBtn");
+        if (!container || !btn) return;
+        mataMataVisible = !mataMataVisible;
+        container.style.display = mataMataVisible ? "" : "none";
+        btn.innerHTML = mataMataVisible ? "👁️ Ocultar mata-mata" : "👁️ Mostrar mata-mata";
+    }
+    document.getElementById("hideGruposBtn")?.addEventListener("click", toggleHideGrupos);
+    document.getElementById("hideMataMataBtn")?.addEventListener("click", toggleHideMataMata);
 
     // Menu de instruções recolhível
     document.getElementById("menuToggleBtn")?.addEventListener("click", function(){
