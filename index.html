@@ -604,6 +604,125 @@
             font-size: 0.75rem;
             padding: 12px 0;
         }
+        /* 🌎 Seleções */
+        .busca-input {
+            width: 100%;
+            background: #0f2a2a;
+            color: #edf4f2;
+            border: 1px solid #1e3a3f;
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: 0.72rem;
+            outline: none;
+        }
+        .busca-input::placeholder { color: #6a8a8a; }
+        .selecoes-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .selecao-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            background: #0f2a2a;
+            border-radius: 10px;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+        .selecao-row:active { background: #1a3b3b; }
+        .selecao-row .flag-emoji { font-size: 1.2em; }
+        .selecao-row .selecao-nome { flex: 1; font-weight: bold; color: #edf4f2; }
+        .selecao-row .selecao-grupo {
+            background: #1e3a3f;
+            padding: 2px 10px;
+            border-radius: 8px;
+            font-size: 0.68rem;
+            color: #f5d98f;
+            font-weight: bold;
+        }
+        .selecao-row .fav-star {
+            font-size: 1.1em;
+            cursor: pointer;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+            padding: 2px;
+        }
+        .selecao-row .fav-star.favorited { opacity: 1; }
+        /* 📊 Estatísticas */
+        .stats-container {
+            font-size: 0.72rem;
+            color: #c5d6d6;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .stat-card {
+            background: #0f2a2a;
+            border-radius: 12px;
+            padding: 10px 12px;
+            text-align: center;
+        }
+        .stat-card .stat-valor {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f5d98f;
+        }
+        .stat-card .stat-label {
+            font-size: 0.62rem;
+            color: #8aa;
+            margin-top: 2px;
+        }
+        .stats-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .stats-tabela th {
+            text-align: left;
+            font-size: 0.62rem;
+            color: #8aa;
+            padding: 4px 6px;
+            border-bottom: 1px solid #1e3a3f;
+        }
+        .stats-tabela td {
+            padding: 3px 6px;
+            font-size: 0.68rem;
+            border-bottom: 1px solid #0f2a2a;
+        }
+        .stats-tabela .flag-emoji { font-size: 1em; }
+        /* ⭐ Favoritos */
+        .favoritos-container { font-size: 0.72rem; }
+        .favoritos-empty {
+            text-align: center;
+            color: #8aa;
+            padding: 16px 0;
+            font-size: 0.75rem;
+        }
+        .favoritos-jogo {
+            background: #0f2a2a;
+            border-radius: 10px;
+            padding: 7px 10px;
+            margin-bottom: 5px;
+            font-size: 0.7rem;
+        }
+        .favoritos-jogo .fj-times { font-weight: bold; color: #edf4f2; }
+        .favoritos-jogo .fj-info { color: #8aa; font-size: 0.62rem; }
+        .favoritos-jogo .fj-grupo {
+            background: #1e3a3f;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.62rem;
+            color: #f5d98f;
+        }
     </style>
 </head>
 <body>
@@ -615,10 +734,10 @@
         <div class="header-top-row">
             <h1 style="margin:0; font-size:1.4rem;">🏆 COPA DO MUNDO 2026 · SELECT PLAY ▶️</h1>
             <div style="display:flex; gap:8px; align-items:center;">
-                <button class="btn-notificar" id="notificarBtn" title="Ativar notificações 30min antes dos jogos">🔕</button>
+                <button class="btn-menu-toggle" id="menuToggleBtn" title="Instruções">☰</button>
                 <button class="btn-install" id="installBtn" title="Instalar app">📲 Instalar</button>
                 <button class="btn-salvar-top" id="exportBtnTop" title="Backup manual (o app salva automaticamente)">💾 Backup</button>
-                <button class="btn-menu-toggle" id="menuToggleBtn" title="Instruções">☰</button>
+                <button class="btn-notificar" id="notificarBtn" title="Ativar notificações 30min antes dos jogos">🔕</button>
             </div>
         </div>
         <!-- Menu recolhível de instruções -->
@@ -632,6 +751,9 @@
             <div class="menu-tabs">
                 <button class="menu-tab active" data-menu-tab="calendario">📅 Calendário</button>
                 <button class="menu-tab" data-menu-tab="instrucoes">📱 Instruções</button>
+                <button class="menu-tab" data-menu-tab="selecoes">🌎 Seleções</button>
+                <button class="menu-tab" data-menu-tab="estatisticas">📊 Estatísticas</button>
+                <button class="menu-tab" data-menu-tab="favoritos">⭐ Favoritos</button>
             </div>
             <div class="menu-tab-content" data-menu-content="instrucoes">
                 <ul>
@@ -644,6 +766,20 @@
                     <li>📂 Use <strong>Expandir/Recolher</strong> para navegar rápido entre grupos e fases</li>
                     <li>🔽 <strong>Role a página</strong> — o cabeçalho fica fixo no topo</li>
                 </ul>
+            </div>
+            <div class="menu-tab-content" data-menu-content="selecoes">
+                <div style="margin-bottom:8px;">
+                    <input type="text" id="buscaSelecao" class="busca-input" placeholder="🔍 Buscar seleção...">
+                </div>
+                <div id="selecoesLista" class="selecoes-grid"></div>
+            </div>
+            <div class="menu-tab-content" data-menu-content="estatisticas">
+                <div id="estatisticasConteudo" class="stats-container"></div>
+            </div>
+            <div class="menu-tab-content" data-menu-content="favoritos">
+                <div id="favoritosConteudo" class="favoritos-container">
+                    <div class="favoritos-empty">⭐ Nenhuma seleção favorita ainda.<br>Vá na aba <strong>🌎 Seleções</strong> e toque na ⭐ para adicionar.</div>
+                </div>
             </div>
             <div class="menu-tab-content active" data-menu-content="calendario">
                 <div class="calendario-nav">
@@ -1399,6 +1535,111 @@
     })();
 
     // Abas do menu
+    // ========== ⭐ FAVORITOS ==========
+    let favoritos = new Set(JSON.parse(localStorage.getItem('copa2026_favoritos') || '[]'));
+    function salvarFavoritos() { localStorage.setItem('copa2026_favoritos', JSON.stringify([...favoritos])); }
+    function toggleFavorito(time) {
+        if (favoritos.has(time)) favoritos.delete(time); else favoritos.add(time);
+        salvarFavoritos();
+        if (document.querySelector('[data-menu-content="favoritos"]')?.classList.contains('active')) renderFavoritos();
+        if (document.querySelector('[data-menu-content="selecoes"]')?.classList.contains('active')) renderSelecoes();
+    }
+
+    // ========== 🌎 SELEÇÕES ==========
+    function renderSelecoes() {
+        const container = document.getElementById('selecoesLista');
+        if (!container) return;
+        const busca = (document.getElementById('buscaSelecao')?.value || '').toLowerCase();
+        let html = '';
+        const todas = [];
+        for (const [grupo, times] of Object.entries(GRUPOS_REAIS)) {
+            for (const time of times) {
+                todas.push({ time, grupo });
+            }
+        }
+        const filtradas = busca ? todas.filter(t => t.time.toLowerCase().includes(busca)) : todas;
+        filtradas.sort((a, b) => a.time.localeCompare(b.time, 'pt'));
+        for (const { time, grupo } of filtradas) {
+            const isFav = favoritos.has(time);
+            html += `<div class="selecao-row" onclick="document.getElementById('buscaSelecao').value='${escapeHtml(time).replace(/'/g,"\\'")}'; renderSelecoes();">
+                <button class="fav-star${isFav ? ' favorited' : ''}" onclick="event.stopPropagation(); toggleFavorito('${escapeHtml(time).replace(/'/g,"\\'")}');" title="${isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}">⭐</button>
+                <span class="flag-emoji">${getFlag(time)}</span>
+                <span class="selecao-nome">${escapeHtml(time)}</span>
+                <span class="selecao-grupo">Grupo ${grupo}</span>
+            </div>`;
+        }
+        if (filtradas.length === 0) html = '<div class="favoritos-empty">🔍 Nenhuma seleção encontrada.</div>';
+        container.innerHTML = html;
+    }
+    document.getElementById('buscaSelecao')?.addEventListener('input', renderSelecoes);
+
+    // ========== 📊 ESTATÍSTICAS ==========
+    function renderEstatisticas() {
+        const container = document.getElementById('estatisticasConteudo');
+        if (!container) return;
+        // Filtrar apenas jogos da fase de grupos
+        const todos = (coletarTodosJogos()).filter(j => j.timeCasa && j.timeFora);
+        const totalJogos = todos.length;
+        let jogosFinalizados = 0, totalGols = 0;
+        const golsPorTime = {};
+        for (const j of todos) {
+            const g1 = (j.golsCasa !== '' && !isNaN(parseInt(j.golsCasa))) ? parseInt(j.golsCasa) : null;
+            const g2 = (j.golsFora !== '' && !isNaN(parseInt(j.golsFora))) ? parseInt(j.golsFora) : null;
+            if (g1 !== null && g2 !== null) {
+                jogosFinalizados++;
+                totalGols += g1 + g2;
+                golsPorTime[j.timeCasa] = (golsPorTime[j.timeCasa] || 0) + g1;
+                golsPorTime[j.timeFora] = (golsPorTime[j.timeFora] || 0) + g2;
+            }
+        }
+        const mediaGols = jogosFinalizados > 0 ? (totalGols / jogosFinalizados).toFixed(1) : '—';
+        // Top artilheiros
+        const artilheiros = Object.entries(golsPorTime).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        let html = `<div class="stats-grid">
+            <div class="stat-card"><div class="stat-valor">${totalJogos}</div><div class="stat-label">Jogos na fase de grupos</div></div>
+            <div class="stat-card"><div class="stat-valor">${jogosFinalizados}</div><div class="stat-label">Jogos finalizados</div></div>
+            <div class="stat-card"><div class="stat-valor">${totalGols}</div><div class="stat-label">Gols marcados</div></div>
+            <div class="stat-card"><div class="stat-valor">${mediaGols}</div><div class="stat-label">Média de gols por jogo</div></div>
+        </div>`;
+        if (artilheiros.length > 0 && artilheiros[0][1] > 0) {
+            html += '<div style="font-weight:bold;color:#f5d98f;margin-bottom:4px;">⚽ Artilheiros</div>';
+            html += '<table class="stats-tabela"><tr><th>#</th><th>Seleção</th><th>Gols</th></tr>';
+            artilheiros.forEach(([time, gols], i) => {
+                html += `<tr><td>${i+1}</td><td><span class="flag-emoji">${getFlag(time)}</span> ${escapeHtml(time)}</td><td><strong>${gols}</strong></td></tr>`;
+            });
+            html += '</table>';
+        }
+        container.innerHTML = html;
+    }
+
+    // ========== ⭐ FAVORITOS (render) ==========
+    function renderFavoritos() {
+        const container = document.getElementById('favoritosConteudo');
+        if (!container) return;
+        if (favoritos.size === 0) {
+            container.innerHTML = '<div class="favoritos-empty">⭐ Nenhuma seleção favorita ainda.<br>Vá na aba <strong>🌎 Seleções</strong> e toque na ⭐ para adicionar.</div>';
+            return;
+        }
+        // Filtrar apenas jogos da fase de grupos
+        const todos = (coletarTodosJogos()).filter(j => j.timeCasa && j.timeFora);
+        const jogosFav = todos.filter(j => favoritos.has(j.timeCasa) || favoritos.has(j.timeFora));
+        jogosFav.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let html = '';
+        for (const j of jogosFav) {
+            const hora = j.dataHora ? j.dataHora.split(' • ')[1] || '' : '';
+            const placar = (j.golsCasa !== '' && j.golsFora !== '') ? ` ${j.golsCasa}—${j.golsFora}` : '';
+            html += `<div class="favoritos-jogo">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+                    <span class="fj-times"><span class="flag-emoji">${getFlag(j.timeCasa)}</span> ${escapeHtml(j.timeCasa)} <span style="color:#e6b12e;">vs</span> <span class="flag-emoji">${getFlag(j.timeFora)}</span> ${escapeHtml(j.timeFora)}${placar}</span>
+                    <span class="fj-grupo">Grupo ${j.grupo || '?'}</span>
+                </div>
+                <div class="fj-info">🕐 ${hora} • 🏟️ ${escapeHtml(j.local || '')} • 📅 ${j.dataHora || ''}</div>
+            </div>`;
+        }
+        if (jogosFav.length === 0) html = '<div class="favoritos-empty">📭 Nenhum jogo encontrado para suas seleções favoritas.</div>';
+        container.innerHTML = html;
+    }
+
     document.querySelectorAll('.menu-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             const target = this.dataset.menuTab;
@@ -1411,6 +1652,9 @@
             if (content) {
                 content.classList.add('active');
                 if (target === 'calendario') renderCalendario();
+                else if (target === 'selecoes') renderSelecoes();
+                else if (target === 'estatisticas') renderEstatisticas();
+                else if (target === 'favoritos') renderFavoritos();
             }
         });
     });
