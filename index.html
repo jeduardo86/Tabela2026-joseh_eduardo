@@ -572,6 +572,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 4px;
+            cursor: pointer;
         }
         .calendario-jogo .cj-times { font-weight: bold; color: #edf4f2; }
         .calendario-jogo .cj-info { color: #8aa; font-size: 0.65rem; }
@@ -713,6 +714,7 @@
             padding: 7px 10px;
             margin-bottom: 5px;
             font-size: 0.7rem;
+            cursor: pointer;
         }
         .favoritos-jogo .fj-times { font-weight: bold; color: #edf4f2; }
         .favoritos-jogo .fj-info { color: #8aa; font-size: 0.62rem; }
@@ -1483,7 +1485,7 @@
             if (grupoLabel.length === 1 && grupoLabel >= 'A' && grupoLabel <= 'Z') {
                 grupoLabel = 'Grupo ' + grupoLabel;
             }
-            html += `<div class="calendario-jogo">
+            html += `<div class="calendario-jogo" onclick="navegarParaJogo('${j.grupo || ''}', '${escapeHtml(j.timeCasa)}', '${escapeHtml(j.timeFora)}')" title="Ir para o jogo">
                 <div style="flex:1;min-width:0;">
                     <div class="cj-times"><span class="flag-emoji">${getFlag(j.timeCasa)}</span> ${escapeHtml(j.timeCasa)} <span style="color:#e6b12e;">vs</span> <span class="flag-emoji">${getFlag(j.timeFora)}</span> ${escapeHtml(j.timeFora)}</div>
                     <div class="cj-info">🕐 ${hora} • 🏟️ ${escapeHtml(local)}</div>
@@ -1504,6 +1506,38 @@
         calendarioIdxAtual = -1; // força recalcular hoje no render
         renderCalendario();
     });
+
+    // ========== 🎯 Navegação para jogo no grupo ==========
+    function navegarParaJogo(grupo, timeCasa, timeFora) {
+        if (!grupo || !timeCasa || !timeFora) return;
+        // Fechar menu
+        const menu = document.getElementById('menuInstrucoes');
+        const btnMenu = document.getElementById('menuToggleBtn');
+        if (menu) menu.classList.remove('open');
+        if (btnMenu) btnMenu.innerHTML = '☰';
+        // Expandir grupo se estiver recolhido
+        const content = document.querySelector(`[data-grupo-content="${grupo}"]`);
+        const header = document.querySelector(`[data-toggle-grupo="${grupo}"]`);
+        if (content && content.classList.contains('collapsed')) {
+            if (header) header.click();
+        }
+        // Encontrar o jogo e scroll
+        setTimeout(() => {
+            const grupoCard = document.querySelector(`[data-grupo-content="${grupo}"]`);
+            if (!grupoCard) return;
+            const jogos = grupoCard.querySelectorAll('.jogo-row');
+            for (const row of jogos) {
+                const text = row.textContent || '';
+                if (text.includes(timeCasa) && text.includes(timeFora)) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    row.style.transition = 'background 0.5s';
+                    row.style.background = '#2c5a3a';
+                    setTimeout(() => { row.style.background = ''; }, 1500);
+                    break;
+                }
+            }
+        }, 350);
+    }
 
     function atualizarBotaoHoje() {
         const btn = document.getElementById('calHojeBtn');
@@ -1628,7 +1662,7 @@
         for (const j of jogosFav) {
             const hora = j.dataHora ? j.dataHora.split(' • ')[1] || '' : '';
             const placar = (j.golsCasa !== '' && j.golsFora !== '') ? ` ${j.golsCasa}—${j.golsFora}` : '';
-            html += `<div class="favoritos-jogo">
+            html += `<div class="favoritos-jogo" onclick="navegarParaJogo('${j.grupo || ''}', '${escapeHtml(j.timeCasa)}', '${escapeHtml(j.timeFora)}')" title="Ir para o jogo">
                 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
                     <span class="fj-times"><span class="flag-emoji">${getFlag(j.timeCasa)}</span> ${escapeHtml(j.timeCasa)} <span style="color:#e6b12e;">vs</span> <span class="flag-emoji">${getFlag(j.timeFora)}</span> ${escapeHtml(j.timeFora)}${placar}</span>
                     <span class="fj-grupo">Grupo ${j.grupo || '?'}</span>
