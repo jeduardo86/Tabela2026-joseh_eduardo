@@ -489,6 +489,23 @@
             color: #c5d6d6;
         }
         .menu-instrucoes li { margin-bottom: 2px; }
+        .menu-visibility-toggles {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-vis-toggle {
+            background: #1a4a4a;
+            color: #edf4f2;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-vis-toggle:active { background: #2c6c6c; }
         .menu-tabs {
             display: flex;
             gap: 4px;
@@ -606,6 +623,12 @@
         </div>
         <!-- Menu recolhível de instruções -->
         <div class="menu-instrucoes" id="menuInstrucoes">
+            <div class="menu-visibility-toggles">
+                <button id="toggleGruposBtn" class="btn-vis-toggle">📁 Recolher grupos</button>
+                <button id="toggleFasesBtn" class="btn-vis-toggle">🏆 Recolher fases</button>
+                <button id="hideGruposBtn" class="btn-vis-toggle" title="Ocultar/mostrar fase de grupos">👁️ Ocultar grupos</button>
+                <button id="hideMataMataBtn" class="btn-vis-toggle" title="Ocultar/mostrar mata-mata">👁️ Ocultar mata-mata</button>
+            </div>
             <div class="menu-tabs">
                 <button class="menu-tab active" data-menu-tab="calendario">📅 Calendário</button>
                 <button class="menu-tab" data-menu-tab="instrucoes">📱 Instruções</button>
@@ -636,10 +659,6 @@
             🗓️ <strong>Jogos ordenados por data e horário</strong> • 🇧🇷 Bandeiras • ⚽ Classificação automática • 🏆 Mata-mata automático • 💾 Salvamento automático
         </div>
         <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-            <button id="toggleGruposBtn" class="btn-expand-all">📁 Recolher grupos</button>
-            <button id="toggleFasesBtn" class="btn-expand-all">🏆 Recolher fases</button>
-            <button id="hideGruposBtn" class="btn-expand-all" style="background:#1a4a4a;" title="Ocultar/mostrar fase de grupos">👁️ Ocultar grupos</button>
-            <button id="hideMataMataBtn" class="btn-expand-all" style="background:#1a4a4a;" title="Ocultar/mostrar mata-mata">👁️ Ocultar mata-mata</button>
             <span id="relogioDataHora" style="margin-left: auto; font-size: 0.85rem; opacity: 0.8; white-space: nowrap;">📅 12/06/2026 00:00</span>
         </div>
     </div>
