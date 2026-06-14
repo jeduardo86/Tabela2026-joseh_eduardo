@@ -1,6 +1,6 @@
 // Service Worker - Copa 2026 PWA
 // Versão do cache (incremente ao fazer deploy para forçar atualização)
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `copa2026-${CACHE_VERSION}`;
 const OFFLINE_URL = '/Tabela2026-joseh_eduardo/';
 
