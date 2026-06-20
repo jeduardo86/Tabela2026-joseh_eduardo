@@ -407,6 +407,13 @@
             color: white;
             animation: pulse-notify 2s ease-in-out infinite;
         }
+        .btn-notificar.loading-state {
+            background: #1e3a3f;
+            color: #f5d98f;
+            opacity: 0.5;
+            pointer-events: none;
+            animation: spin-api 1s linear infinite;
+        }
         @keyframes pulse-notify {
             0%, 100% { box-shadow: 0 0 0 0 rgba(47, 115, 90, 0.4); }
             50% { box-shadow: 0 0 0 8px rgba(47, 115, 90, 0); }
@@ -2017,18 +2024,62 @@
             showToast('🔕 Seu navegador não suporta notificações', true);
             return false;
         }
-        if (Notification.permission === 'granted') return true;
+        if (typeof Notification.requestPermission !== 'function') {
+            showToast('🔕 API de notificações indisponível neste contexto', true);
+            return false;
+        }
+        if (Notification.permission === 'granted') {
+            // Verificar se notificações realmente funcionam (podem falhar em file://)
+            const funciona = await testarNotificacaoReal();
+            if (!funciona) {
+                showToast('⚠️ Permissão concedida, mas notificações não funcionam neste protocolo. Abra via HTTPS ou app instalado.', true);
+                return false;
+            }
+            return true;
+        }
         if (Notification.permission === 'denied') {
             showToast('🔕 Notificações bloqueadas. Habilite nas configurações do navegador.', true);
             return false;
         }
-        const result = await Notification.requestPermission();
-        if (result === 'granted') {
-            showToast('🔔 Notificações ativadas! Você será avisado 30min antes de cada jogo.');
-            return true;
+        // permission === 'default': solicitar permissão
+        try {
+            const result = await Notification.requestPermission();
+            if (result === 'granted') {
+                // Testar se funciona de verdade
+                const funciona = await testarNotificacaoReal();
+                if (!funciona) {
+                    showToast('⚠️ Permissão concedida, mas notificações podem não funcionar. Tente instalar o app.', true);
+                    // Deixa ativar mesmo assim, o fallback tentará de qualquer forma
+                }
+                showToast('🔔 Notificações ativadas! Você será avisado 30min antes de cada jogo.');
+                return true;
+            }
+        } catch (e) {
+            console.warn('[🔔] Erro ao solicitar permissão:', e.message);
         }
         showToast('🔕 Permissão negada para notificações', true);
         return false;
+    }
+
+    async function testarNotificacaoReal() {
+        // Tenta criar uma notificação de teste silenciosa para validar se funciona
+        if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+        try {
+            const testNotif = new Notification('✅ Teste Copa 2026', {
+                body: 'Notificações funcionando! Você será avisado 30min antes de cada jogo.',
+                tag: 'copa2026-teste',
+                icon: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'%3E%3Crect width=\'192\' height=\'192\' rx=\'38\' fill=\'%230c1f1f\'/%3E%3Ccircle cx=\'96\' cy=\'100\' r=\'61\' fill=\'none\' stroke=\'%23e6b12e\' stroke-width=\'10\'/%3E%3Ctext x=\'96\' y=\'130\' text-anchor=\'middle\' font-size=\'80\'%3E🏆%3C/text%3E%3C/svg%3E',
+                requireInteraction: false,
+                silent: false
+            });
+            // Fecha a notificação de teste após 3 segundos
+            setTimeout(() => { try { testNotif.close(); } catch(e) {} }, 3000);
+            console.log('[🔔] Notificação de teste criada com sucesso');
+            return true;
+        } catch (e) {
+            console.warn('[🔔] Notificação de teste falhou:', e.message);
+            return false;
+        }
     }
 
     function coletarTodosJogos() {
@@ -2078,24 +2129,65 @@
         const titulo = `⚽ ${jogo.timeCasa} vs ${jogo.timeFora}`;
         const corpo = `${mensagemExtra || 'Começa em 30 minutos!'}\n📅 ${jogo.dataHora}\n🏟️ ${jogo.local}`;
         const tag = `copa2026-${jogo.timeCasa}-${jogo.timeFora}-${jogo.timestamp}`;
+        const iconoData = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'%3E%3Crect width=\'192\' height=\'192\' rx=\'38\' fill=\'%230c1f1f\'/%3E%3Ccircle cx=\'96\' cy=\'100\' r=\'61\' fill=\'none\' stroke=\'%23e6b12e\' stroke-width=\'10\'/%3E%3Ctext x=\'96\' y=\'130\' text-anchor=\'middle\' font-size=\'80\'%3E🏆%3C/text%3E%3C/svg%3E';
+        const badgeData = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 96 96\'%3E%3Crect width=\'96\' height=\'96\' rx=\'20\' fill=\'%230c1f1f\'/%3E%3Ctext x=\'48\' y=\'64\' text-anchor=\'middle\' font-size=\'56\'%3E⚽%3C/text%3E%3C/svg%3E';
 
-        // Tentar via Service Worker primeiro
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-                type: 'SHOW_NOTIFICATION',
-                titulo, corpo, tag
-            });
-        } else if ('Notification' in window && Notification.permission === 'granted') {
-            // Fallback: mostrar diretamente
-            new Notification(titulo, {
-                body: corpo,
-                tag: tag,
-                icon: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 192 192\'%3E%3Crect width=\'192\' height=\'192\' rx=\'38\' fill=\'%230c1f1f\'/%3E%3Ccircle cx=\'96\' cy=\'100\' r=\'61\' fill=\'none\' stroke=\'%23e6b12e\' stroke-width=\'10\'/%3E%3Ctext x=\'96\' y=\'130\' text-anchor=\'middle\' font-size=\'80\'%3E🏆%3C/text%3E%3C/svg%3E',
-                renotify: true
-            });
+        let notificou = false;
+
+        // Tentar primeiro via Notificação direta (mais confiável, funciona mesmo sem SW)
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+                const notif = new Notification(titulo, {
+                    body: corpo,
+                    tag: tag,
+                    icon: iconoData,
+                    badge: badgeData,
+                    renotify: true,
+                    requireInteraction: false
+                });
+                notif.addEventListener('click', () => {
+                    notif.close();
+                    window.focus();
+                });
+                notif.addEventListener('error', () => {
+                    console.warn('[🔔] Erro ao exibir notificação nativa, tentando via SW...');
+                });
+                notificou = true;
+            } catch (e) {
+                console.warn('[🔔] Falha ao criar Notification nativa:', e.message);
+            }
         }
 
-        console.log(`[🔔] Notificação: ${titulo} — ${corpo}`);
+        // Fallback: tentar via Service Worker (funciona em PWA instalado e HTTPS)
+        if (!notificou && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            try {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SHOW_NOTIFICATION',
+                    titulo, corpo, tag
+                });
+                notificou = true;
+            } catch (e) {
+                console.warn('[🔔] Falha ao enviar notificação via SW:', e.message);
+            }
+        }
+
+        // Último fallback: SW registrado mas ainda não controla a página
+        if (!notificou && 'serviceWorker' in navigator && !navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then(reg => {
+                if (reg.active) {
+                    reg.active.postMessage({
+                        type: 'SHOW_NOTIFICATION',
+                        titulo, corpo, tag
+                    });
+                }
+            }).catch(() => {});
+        }
+
+        if (!notificou) {
+            console.warn(`[🔔] Não foi possível exibir notificação: ${titulo}`);
+        } else {
+            console.log(`[🔔] Notificação exibida: ${titulo} — ${corpo}`);
+        }
     }
 
     function agendarNotificacoes(silencioso = false) {
@@ -2178,13 +2270,24 @@
             showToast('🔕 Notificações desativadas');
         } else {
             // Ativar: pedir permissão primeiro
-            const permitido = await solicitarPermissaoNotificacoes();
-            if (!permitido) return;
-            notificacoesAtivas = true;
-            btn.classList.add('active');
-            btn.innerHTML = '🔔';
-            btn.title = 'Notificações ativas! Desativar';
-            agendarNotificacoes();
+            btn.classList.add('loading-state');
+            try {
+                const permitido = await solicitarPermissaoNotificacoes();
+                if (!permitido) {
+                    btn.classList.remove('loading-state');
+                    return;
+                }
+                notificacoesAtivas = true;
+                btn.classList.add('active');
+                btn.classList.remove('loading-state');
+                btn.innerHTML = '🔔';
+                btn.title = 'Notificações ativas! Desativar';
+                agendarNotificacoes();
+            } catch (e) {
+                btn.classList.remove('loading-state');
+                console.error('[🔔] Erro ao ativar notificações:', e);
+                showToast('❌ Erro ao ativar notificações. Tente novamente.', true);
+            }
         }
     }
 
@@ -2195,23 +2298,43 @@
     (function restaurarNotificacoes() {
         const state = getNotificationState();
         const btn = document.getElementById('notificarBtn');
-        if (state.ativo && Notification.permission === 'granted') {
-            notificacoesAtivas = true;
-            if (btn) {
-                btn.classList.add('active');
-                btn.innerHTML = '🔔';
-                btn.title = 'Notificações ativas! Desativar';
-            }
-            // Reagendar notificações que ainda não passaram (silencioso no load)
-            agendarNotificacoes(true);
-            console.log('[🔔] Notificações restauradas do estado salvo');
-        } else {
+        
+        // Só restaura se o estado está ativo
+        if (!state.ativo) {
             notificacoesAtivas = false;
             if (btn) {
                 btn.classList.remove('active');
                 btn.innerHTML = '🔕';
             }
+            return;
+        }
+        
+        if (Notification.permission !== 'granted') {
+            // Permissão revogada, limpar estado
+            notificacoesAtivas = false;
             saveNotificationState({ ativo: false });
+            if (btn) {
+                btn.classList.remove('active');
+                btn.innerHTML = '🔕';
+            }
+            console.log('[🔔] Permissão de notificação revogada, estado limpo');
+            return;
+        }
+        
+        // Permissão ok e estado ativo: restaurar
+        notificacoesAtivas = true;
+        if (btn) {
+            btn.classList.add('active');
+            btn.innerHTML = '🔔';
+            btn.title = 'Notificações ativas! Desativar';
+        }
+        
+        // Reagendar notificações (silencioso no load)
+        if (document.visibilityState === 'visible') {
+            agendarNotificacoes(true);
+            console.log('[🔔] Notificações restauradas do estado salvo');
+        } else {
+            console.log('[🔔] Página em segundo plano, notificações serão reagendadas ao ficar visível');
         }
     })();
 
@@ -2254,8 +2377,20 @@
     });
 
     // ========== PWA: Service Worker ==========
+    // Detecta se o protocolo atual suporta Service Workers
+    const suportaSW = 'serviceWorker' in navigator && 
+                      (window.location.protocol === 'https:' || 
+                       window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1');
+    
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
+            // Só registra SW em protocolos suportados (HTTPS ou localhost)
+            if (!suportaSW) {
+                console.log('[PWA] Service Worker não suportado em ' + window.location.protocol + '. ' +
+                    'Notificações funcionarão via API nativa. Para experiência completa, acesse via HTTPS ou instale o app.');
+                return;
+            }
             navigator.serviceWorker.register('/Tabela2026-joseh_eduardo/sw.js', { scope: '/Tabela2026-joseh_eduardo/' })
                 .then(reg => {
                     console.log('[PWA] Service Worker registrado:', reg.scope);
@@ -2273,6 +2408,11 @@
                             });
                         }
                     });
+                    
+                    // Força o SW a controlar a página imediatamente se houver waiting
+                    if (reg.waiting) {
+                        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
                 })
                 .catch(err => console.warn('[PWA] Falha ao registrar SW:', err));
         });
