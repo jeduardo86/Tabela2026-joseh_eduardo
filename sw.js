@@ -1,6 +1,6 @@
 // Service Worker - Copa 2026 PWA
 // Versão do cache (incremente ao fazer deploy para forçar atualização)
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `copa2026-${CACHE_VERSION}`;
 const OFFLINE_URL = '/Tabela2026-joseh_eduardo/';
 
@@ -55,6 +55,14 @@ self.addEventListener('fetch', event => {
 
   // Ignorar requisições não-HTTP(S), chrome-extension, etc.
   if (!url.protocol.startsWith('http')) return;
+
+  // NÃO interceptar chamadas a APIs externas (football-data, api-sports, etc.)
+  // — elas precisam ir direto pra rede com os headers originais
+  if (url.hostname.includes('football-data.org') ||
+      url.hostname.includes('api-sports.io') ||
+      url.hostname.includes('rapidapi.com')) {
+    return; // deixa o navegador fazer a requisição normalmente
+  }
 
   // Estratégia: Network First para navegação, Cache First para assets
   if (request.mode === 'navigate') {

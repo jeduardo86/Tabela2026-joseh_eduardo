@@ -826,3 +826,2012 @@ QCCF
 WC Qualification CONCACAF
 
 World
+
+Competition
+Overview
+You will use the list representation of the Competition Resource to find out which competitions are available and see which ones you have access to. You can also get insight into how much historical data is available for a particular competition by calling the the resource by itself (with an id).
+
+Let’s see the entire beauty of the competition resource below.
+
+curl -XGET 'https://api.football-data.org/v4/competitions/PL' -H "X-Auth-Token: UR_TOKEN"
+{
+    "area": {
+        "id": 2072,
+        "name": "England",
+        "code": "ENG",
+        "flag": "https://crests.football-data.org/770.svg"
+    },
+    "id": 2021,
+    "name": "Premier League",
+    "code": "PL",
+    "type": "LEAGUE",
+    "emblem": "https://crests.football-data.org/PL.png",
+    "currentSeason": {
+        "id": 733,
+        "startDate": "2021-08-13",
+        "endDate": "2022-05-22",
+        "currentMatchday": 37,
+        "winner": null,
+        "stages": [
+            "REGULAR_SEASON"
+        ]
+    },
+    "seasons": [
+        {
+            "id": 733,
+            "startDate": "2021-08-13",
+            "endDate": "2022-05-22",
+            "currentMatchday": 37,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 619,
+            "startDate": "2020-09-12",
+            "endDate": "2021-05-23",
+            "currentMatchday": 38,
+            "winner": {
+                "id": 65,
+                "name": "Manchester City FC",
+                "shortName": "Man City",
+                "tla": "MCI",
+                "crest": "https://crests.football-data.org/65.png",
+                "address": "SportCity Manchester M11 3FF",
+                "website": "https://www.mancity.com",
+                "founded": 1880,
+                "clubColors": "Sky Blue / White",
+                "venue": "Etihad Stadium",
+                "lastUpdated": "2022-02-10T19:48:37Z"
+            },
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 468,
+            "startDate": "2019-08-09",
+            "endDate": "2020-07-26",
+            "currentMatchday": 38,
+            "winner": {
+                "id": 64,
+                "name": "Liverpool FC",
+                "shortName": "Liverpool",
+                "tla": "LIV",
+                "crest": "https://crests.football-data.org/64.png",
+                "address": "Anfield Road Liverpool L4 0TH",
+                "website": "http://www.liverpoolfc.tv",
+                "founded": 1892,
+                "clubColors": "Red / White",
+                "venue": "Anfield",
+                "lastUpdated": "2022-02-10T19:30:22Z"
+            },
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 151,
+            "startDate": "2018-08-10",
+            "endDate": "2019-05-12",
+            "currentMatchday": 38,
+            "winner": {
+                "id": 65,
+                "name": "Manchester City FC",
+                "shortName": "Man City",
+                "tla": "MCI",
+                "crest": "https://crests.football-data.org/65.png",
+                "address": "SportCity Manchester M11 3FF",
+                "website": "https://www.mancity.com",
+                "founded": 1880,
+                "clubColors": "Sky Blue / White",
+                "venue": "Etihad Stadium",
+                "lastUpdated": "2022-02-10T19:48:37Z"
+            },
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 23,
+            "startDate": "2017-08-11",
+            "endDate": "2018-05-13",
+            "currentMatchday": 38,
+            "winner": {
+                "id": 65,
+                "name": "Manchester City FC",
+                "shortName": "Man City",
+                "tla": "MCI",
+                "crest": "https://crests.football-data.org/65.png",
+                "address": "SportCity Manchester M11 3FF",
+                "website": "https://www.mancity.com",
+                "founded": 1880,
+                "clubColors": "Sky Blue / White",
+                "venue": "Etihad Stadium",
+                "lastUpdated": "2022-02-10T19:48:37Z"
+            },
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 256,
+            "startDate": "2016-08-13",
+            "endDate": "2017-05-21",
+            "currentMatchday": null,
+            "winner": {
+                "id": 61,
+                "name": "Chelsea FC",
+                "shortName": "Chelsea",
+                "tla": "CHE",
+                "crest": "https://crests.football-data.org/61.png",
+                "address": "Fulham Road London SW6 1HS",
+                "website": "http://www.chelseafc.com",
+                "founded": 1905,
+                "clubColors": "Royal Blue / White",
+                "venue": "Stamford Bridge",
+                "lastUpdated": "2022-02-10T19:24:40Z"
+            },
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        [ ... way more seasons ... ]
+        {
+            "id": 973,
+            "startDate": "1898-08-30",
+            "endDate": "1899-04-27",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 983,
+            "startDate": "1897-08-30",
+            "endDate": "1898-04-28",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 984,
+            "startDate": "1896-08-30",
+            "endDate": "1897-04-24",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 975,
+            "startDate": "1895-08-31",
+            "endDate": "1896-04-27",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 976,
+            "startDate": "1894-08-30",
+            "endDate": "1895-04-22",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 981,
+            "startDate": "1893-08-31",
+            "endDate": "1894-04-21",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 979,
+            "startDate": "1892-09-01",
+            "endDate": "1893-04-15",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 985,
+            "startDate": "1891-09-03",
+            "endDate": "1892-04-28",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 977,
+            "startDate": "1890-09-04",
+            "endDate": "1891-04-16",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 978,
+            "startDate": "1889-09-05",
+            "endDate": "1890-03-29",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        },
+        {
+            "id": 1040,
+            "startDate": "1888-09-06",
+            "endDate": "1889-04-18",
+            "currentMatchday": null,
+            "winner": null,
+            "stages": [
+                "REGULAR_SEASON"
+            ]
+        }
+    ],
+    "lastUpdated": "2022-03-20T08:58:54Z"
+}
+Available filters for the list resource
+The resource itself does not provide any filters, but the list resource does. Please notice that by default the competitions are filtered for the authenticated client. You can disable authentication (not pass a token) to list all available competitions. Besides there is only:
+
+Filter name	Possible values	Sample
+areas
+
+A (comma separated) list of area ids
+like: String /\d+,\d+/
+
+/?areas=2016,2023,2025
+
+Standings
+While in print media you only find one (overall) standing most of the time, actually there are way more standings and you use the Standing Subresource to access them.
+
+Click here to see a sample implementation with some layers of plumbing and transformation code in between.
+
+Standings give a quick overview of a teams' performance relative to their opponents by aggregating data points over a certain range of time.
+
+I provide official standings for the running season, so you can show it on your website with confidence. However, be prepared to save a snapshot of the standing after the season ended for future use, as I will remove deducted points for past seasons. This is because the (my) main purpose of past data is data analysis targeting team performances. And these shall not be affected by legal decisions.
+The Resource acts differently depending on the type of the competition it is based on. Basically this is three things:
+
+it is not available (returns 404) for competitions of type CUP and PLAYOFFS
+
+it returns a list of standings, one for each group for competitions of type LEAGUE_CUP
+
+it returns a TOTAL, HOME and AWAY standing for competitions of type LEAGUE
+
+Let’s see the entire beauty of the Standing Resource below.
+
+curl -XGET 'https://api.football-data.org/v4/competitions/PD/standings' -H "X-Auth-Token: UR_TOKEN"
+{
+    "filters": {
+        "season": "2021"
+    },
+    "area": {
+        "id": 2224,
+        "name": "Spain",
+        "code": "ESP",
+        "flag": "https://crests.football-data.org/760.svg"
+    },
+    "competition": {
+        "id": 2014,
+        "name": "Primera Division",
+        "code": "PD",
+        "type": "LEAGUE",
+        "emblem": "https://crests.football-data.org/PD.png"
+    },
+    "season": {
+        "id": 380,
+        "startDate": "2021-08-13",
+        "endDate": "2022-05-22",
+        "currentMatchday": 34,
+        "winner": null,
+        "stages": [
+            "REGULAR_SEASON"
+        ]
+    },
+    "standings": [
+        {
+            "stage": "REGULAR_SEASON",
+            "type": "TOTAL",
+            "group": null,
+            "table": [
+                {
+                    "position": 1,
+                    "team": {
+                        "id": 86,
+                        "name": "Real Madrid CF",
+                        "shortName": "Real Madrid",
+                        "tla": "RMA",
+                        "crest": "https://crests.football-data.org/86.png"
+                    },
+                    "playedGames": 34,
+                    "form": "W,W,W,W,W",
+                    "won": 25,
+                    "draw": 6,
+                    "lost": 3,
+                    "points": 81,
+                    "goalsFor": 73,
+                    "goalsAgainst": 29,
+                    "goalDifference": 44
+                },
+                {
+                    "position": 2,
+                    "team": {
+                        "id": 81,
+                        "name": "FC Barcelona",
+                        "shortName": "Barça",
+                        "tla": "FCB",
+                        "crest": "https://crests.football-data.org/81.svg"
+                    },
+                    "playedGames": 34,
+                    "form": "W,L,W,L,W",
+                    "won": 19,
+                    "draw": 9,
+                    "lost": 6,
+                    "points": 66,
+                    "goalsFor": 63,
+                    "goalsAgainst": 34,
+                    "goalDifference": 29
+                },
+                {
+                    "position": 3,
+                    "team": {
+                        "id": 559,
+                        "name": "Sevilla FC",
+                        "shortName": "Sevilla FC",
+                        "tla": "SEV",
+                        "crest": "https://crests.football-data.org/559.svg"
+                    },
+                    "playedGames": 34,
+                    "form": "D,W,L,W,L",
+                    "won": 17,
+                    "draw": 13,
+                    "lost": 4,
+                    "points": 64,
+                    "goalsFor": 50,
+                    "goalsAgainst": 28,
+                    "goalDifference": 22
+                },
+                {
+                    "position": 4,
+                    "team": {
+                        "id": 78,
+                        "name": "Club Atlético de Madrid",
+                        "shortName": "Atleti",
+                        "tla": "ATL",
+                        "crest": "https://crests.football-data.org/78.svg"
+                    },
+                    "playedGames": 34,
+                    "form": "L,D,W,L,W",
+                    "won": 18,
+                    "draw": 7,
+                    "lost": 9,
+                    "points": 61,
+                    "goalsFor": 59,
+                    "goalsAgainst": 41,
+                    "goalDifference": 18
+                },
+                {
+                    "position": 5,
+                    "team": {
+                        "id": 90,
+                        "name": "Real Betis Balompié",
+                        "shortName": "Real Betis",
+                        "tla": "BET",
+                        "crest": "https://crests.football-data.org/90.svg"
+                    },
+                    "playedGames": 33,
+                    "form": "L,D,W,W,D",
+                    "won": 17,
+                    "draw": 6,
+                    "lost": 10,
+                    "points": 57,
+                    "goalsFor": 56,
+                    "goalsAgainst": 38,
+                    "goalDifference": 18
+                },
+                [ ... way more standings ... ]
+                {
+                    "position": 19,
+                    "team": {
+                        "id": 263,
+                        "name": "Deportivo Alavés",
+                        "shortName": "Alavés",
+                        "tla": "ALA",
+                        "crest": "https://crests.football-data.org/263.png"
+                    },
+                    "playedGames": 34,
+                    "form": "W,L,W,L,L",
+                    "won": 7,
+                    "draw": 7,
+                    "lost": 20,
+                    "points": 28,
+                    "goalsFor": 28,
+                    "goalsAgainst": 56,
+                    "goalDifference": -28
+                },
+                {
+                    "position": 20,
+                    "team": {
+                        "id": 88,
+                        "name": "Levante UD",
+                        "shortName": "Levante",
+                        "tla": "LEV",
+                        "crest": "https://crests.football-data.org/88.svg"
+                    },
+                    "playedGames": 34,
+                    "form": "D,L,W,L,W",
+                    "won": 5,
+                    "draw": 11,
+                    "lost": 18,
+                    "points": 26,
+                    "goalsFor": 42,
+                    "goalsAgainst": 66,
+                    "goalDifference": -24
+                }
+            ]
+        },
+        {
+            "stage": "REGULAR_SEASON",
+            "type": "HOME",
+            "group": null,
+            "table": [
+                {
+                    "position": 1,
+                    "team": {
+                        "id": 86,
+                        "name": "Real Madrid CF",
+                        "shortName": "Real Madrid",
+                        "tla": "RMA",
+                        "crest": "https://crests.football-data.org/86.png"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 12,
+                    "draw": 4,
+                    "lost": 1,
+                    "points": 40,
+                    "goalsFor": 38,
+                    "goalsAgainst": 13,
+                    "goalDifference": 25
+                },
+                {
+                    "position": 2,
+                    "team": {
+                        "id": 559,
+                        "name": "Sevilla FC",
+                        "shortName": "Sevilla FC",
+                        "tla": "SEV",
+                        "crest": "https://crests.football-data.org/559.svg"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 11,
+                    "draw": 5,
+                    "lost": 1,
+                    "points": 38,
+                    "goalsFor": 35,
+                    "goalsAgainst": 17,
+                    "goalDifference": 18
+                },
+                {
+                    "position": 3,
+                    "team": {
+                        "id": 78,
+                        "name": "Club Atlético de Madrid",
+                        "shortName": "Atleti",
+                        "tla": "ATL",
+                        "crest": "https://crests.football-data.org/78.svg"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 11,
+                    "draw": 4,
+                    "lost": 2,
+                    "points": 37,
+                    "goalsFor": 31,
+                    "goalsAgainst": 15,
+                    "goalDifference": 16
+                },
+                {
+                    "position": 4,
+                    "team": {
+                        "id": 94,
+                        "name": "Villarreal CF",
+                        "shortName": "Villarreal",
+                        "tla": "VIL",
+                        "crest": "https://crests.football-data.org/94.png"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 10,
+                    "draw": 5,
+                    "lost": 2,
+                    "points": 35,
+                    "goalsFor": 38,
+                    "goalsAgainst": 15,
+                    "goalDifference": 23
+                },
+                [ ... way more standings ... ]
+                {
+                    "position": 20,
+                    "team": {
+                        "id": 264,
+                        "name": "Cádiz CF",
+                        "shortName": "Cádiz CF",
+                        "tla": "CAD",
+                        "crest": "https://crests.football-data.org/264.png"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 2,
+                    "draw": 8,
+                    "lost": 7,
+                    "points": 14,
+                    "goalsFor": 15,
+                    "goalsAgainst": 23,
+                    "goalDifference": -8
+                }
+            ]
+        },
+        {
+            "stage": "REGULAR_SEASON",
+            "type": "AWAY",
+            "group": null,
+            "table": [
+                {
+                    "position": 1,
+                    "team": {
+                        "id": 86,
+                        "name": "Real Madrid CF",
+                        "shortName": "Real Madrid",
+                        "tla": "RMA",
+                        "crest": "https://crests.football-data.org/86.png"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 13,
+                    "draw": 2,
+                    "lost": 2,
+                    "points": 41,
+                    "goalsFor": 35,
+                    "goalsAgainst": 16,
+                    "goalDifference": 19
+                },
+                [ ... way more standings ... ]
+                {
+                    "position": 17,
+                    "team": {
+                        "id": 88,
+                        "name": "Levante UD",
+                        "shortName": "Levante",
+                        "tla": "LEV",
+                        "crest": "https://crests.football-data.org/88.svg"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 2,
+                    "draw": 4,
+                    "lost": 11,
+                    "points": 10,
+                    "goalsFor": 19,
+                    "goalsAgainst": 38,
+                    "goalDifference": -19
+                },
+                {
+                    "position": 18,
+                    "team": {
+                        "id": 80,
+                        "name": "RCD Espanyol de Barcelona",
+                        "shortName": "Espanyol",
+                        "tla": "ESP",
+                        "crest": "https://crests.football-data.org/80.svg"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 1,
+                    "draw": 5,
+                    "lost": 11,
+                    "points": 8,
+                    "goalsFor": 14,
+                    "goalsAgainst": 32,
+                    "goalDifference": -18
+                },
+                {
+                    "position": 19,
+                    "team": {
+                        "id": 89,
+                        "name": "RCD Mallorca",
+                        "shortName": "Mallorca",
+                        "tla": "MAL",
+                        "crest": "https://crests.football-data.org/89.png"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 2,
+                    "draw": 2,
+                    "lost": 13,
+                    "points": 8,
+                    "goalsFor": 14,
+                    "goalsAgainst": 38,
+                    "goalDifference": -24
+                },
+                {
+                    "position": 20,
+                    "team": {
+                        "id": 263,
+                        "name": "Deportivo Alavés",
+                        "shortName": "Alavés",
+                        "tla": "ALA",
+                        "crest": "https://crests.football-data.org/263.png"
+                    },
+                    "playedGames": 17,
+                    "form": "",
+                    "won": 1,
+                    "draw": 3,
+                    "lost": 13,
+                    "points": 6,
+                    "goalsFor": 13,
+                    "goalsAgainst": 37,
+                    "goalDifference": -24
+                }
+            ]
+        }
+    ]
+}
+Available filters for Standings
+Filter name	Possible values	Sample
+season
+
+An integer, like [\d]{4}
+
+/?season=1981
+
+matchday
+
+An integer, like [\d]{2}
+
+/?matchday=15
+
+date
+
+A date in format yyyy-MM-dd
+
+/?date=2022-01-01 to find out who was in the lead at new years eve
+
+You can combine the season and matchday filters. In case they are used, the resulting standings are compiled by match information only, so they lack possible deducted points.
+(Top) Scorers
+So who does really shine this season when it comes to bringing the teams in front? Use the Top Scorer Subresource to find out. It lists all assists and goals for a competitions' season including assists grouped by player.
+
+Click here to see a sample implementation with some layers of plumbing and transformation code in between.
+
+curl -XGET 'https://api.football-data.org/v4/competitions/SA/scorers' -H "X-Auth-Token: UR_TOKEN"
+{
+    "count": 10,
+    "filters": {
+        "limit": 10
+    },
+    "competition": {
+        "id": 2019,
+        "name": "Serie A",
+        "code": "SA",
+        "type": "LEAGUE",
+        "emblem": "https://crests.football-data.org/SA.png"
+    },
+    "season": {
+        "id": 638,
+        "startDate": "2020-09-19",
+        "endDate": "2021-05-23",
+        "currentMatchday": 38,
+        "winner": {
+            "id": 108,
+            "name": "FC Internazionale Milano",
+            "shortName": "Inter",
+            "tla": "INT",
+            "crest": "https://crests.football-data.org/108.png",
+            "address": "Corso Vittorio Emanuele II 9 Milano 20122",
+            "phone": "+39 (02) 77151",
+            "website": "http://www.inter.it",
+            "email": "segreteriaccic@inter.it",
+            "founded": 1908,
+            "clubColors": "Blue / Black",
+            "venue": "Stadio Giuseppe Meazza",
+            "lastUpdated": "2021-11-24T14:55:58Z"
+        },
+        "stages": [
+            "REGULAR_SEASON"
+        ]
+    },
+    "scorers": [
+        {
+            "player": {
+                "id": 44,
+                "name": "Cristiano Ronaldo",
+                "firstName": "Cristiano Ronaldo",
+                "lastName": "dos Santos Aveiro",
+                "dateOfBirth": "1985-02-05",
+                "countryOfBirth": "Portugal",
+                "nationality": "Portugal",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2021-10-13T08:04:10Z"
+            },
+            "team": {
+                "id": 109,
+                "name": "Juventus FC",
+                "shortName": "Juventus",
+                "tla": "JUV",
+                "crest": "https://crests.football-data.org/109.svg",
+                "address": "Corso Galileo Ferraris, 32 Torino 10128",
+                "phone": "+39 (011) 65631",
+                "website": "http://www.juventus.com",
+                "email": "francesco.gianello@juventus.com",
+                "founded": 1897,
+                "clubColors": "White / Black",
+                "venue": "Allianz Stadium",
+                "lastUpdated": "2020-11-26T02:19:40Z"
+            },
+            "goals": 29,
+            "assists": 3,
+            "penalties": 6
+        },
+        {
+            "player": {
+                "id": 3662,
+                "name": "Romelu Lukaku",
+                "firstName": "Romelu",
+                "lastName": "Lukaku Menama",
+                "dateOfBirth": "1993-05-13",
+                "countryOfBirth": "Belgium",
+                "nationality": "Belgium",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2021-10-13T08:04:13Z"
+            },
+            "team": {
+                "id": 108,
+                "name": "FC Internazionale Milano",
+                "shortName": "Inter",
+                "tla": "INT",
+                "crest": "https://crests.football-data.org/108.png",
+                "address": "Corso Vittorio Emanuele II 9 Milano 20122",
+                "phone": "+39 (02) 77151",
+                "website": "http://www.inter.it",
+                "email": "segreteriaccic@inter.it",
+                "founded": 1908,
+                "clubColors": "Blue / Black",
+                "venue": "Stadio Giuseppe Meazza",
+                "lastUpdated": "2021-11-24T14:55:58Z"
+            },
+            "goals": 24,
+            "assists": 11,
+            "penalties": 6
+        },
+        {
+            "player": {
+                "id": 57,
+                "name": "Luis Muriel",
+                "firstName": "Luis Fernando",
+                "lastName": null,
+                "dateOfBirth": "1991-04-16",
+                "countryOfBirth": "Colombia",
+                "nationality": "Colombia",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2020-09-07T21:10:15Z"
+            },
+            "team": {
+                "id": 102,
+                "name": "Atalanta BC",
+                "shortName": "Atalanta",
+                "tla": "ATA",
+                "crest": "https://crests.football-data.org/102.svg",
+                "address": "Corso Europa, 46, Zingonia Ciserano 24040",
+                "phone": "+39 (035) 4186211",
+                "website": "http://www.atalanta.it",
+                "email": "info@atalanta.it",
+                "founded": 1904,
+                "clubColors": "Black / Blue",
+                "venue": "Stadio Atleti Azzurri d'Italia",
+                "lastUpdated": "2020-11-26T02:19:32Z"
+            },
+            "goals": 22,
+            "assists": 7,
+            "penalties": 2
+        },
+        {
+            "player": {
+                "id": 82002,
+                "name": "Dušan Vlahović",
+                "firstName": "Dušan",
+                "lastName": null,
+                "dateOfBirth": "2000-01-28",
+                "countryOfBirth": "Serbia",
+                "nationality": "Serbia",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2020-09-07T21:10:05Z"
+            },
+            "team": {
+                "id": 99,
+                "name": "ACF Fiorentina",
+                "shortName": "Fiorentina",
+                "tla": "FIO",
+                "crest": "https://crests.football-data.org/99.svg",
+                "address": "Viale Manfredo Fanti 4 Firenze 50137",
+                "phone": "+39 (055) 5030190",
+                "website": "http://www.acffiorentina.it",
+                "email": "segreteria@acffiorentina.it",
+                "founded": 1926,
+                "clubColors": "Purple / White",
+                "venue": "Stadio Artemio Franchi",
+                "lastUpdated": "2020-11-26T02:23:02Z"
+            },
+            "goals": 21,
+            "assists": 2,
+            "penalties": 6
+        },
+        {
+            "player": {
+                "id": 2076,
+                "name": "Ciro Immobile",
+                "firstName": "Ciro",
+                "lastName": "Immobile",
+                "dateOfBirth": "1990-02-20",
+                "countryOfBirth": "Italy",
+                "nationality": "Italy",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2021-10-13T08:03:51Z"
+            },
+            "team": {
+                "id": 110,
+                "name": "SS Lazio",
+                "shortName": "Lazio",
+                "tla": "LAZ",
+                "crest": "https://crests.football-data.org/110.svg",
+                "address": "Via di Santa Cornelia, 1000 Formello 00060",
+                "phone": "+39 (06) 976071",
+                "website": "http://www.sslazio.it",
+                "email": "segreteria.lazio@sslazio.it",
+                "founded": 1900,
+                "clubColors": "White / Sky Blue",
+                "venue": "Stadio Olimpico",
+                "lastUpdated": "2020-11-26T02:19:41Z"
+            },
+            "goals": 20,
+            "assists": 6,
+            "penalties": 4
+        },
+        {
+            "player": {
+                "id": 2236,
+                "name": "Simeon Nwankwo",
+                "firstName": "Simeon",
+                "lastName": null,
+                "dateOfBirth": "1992-05-07",
+                "countryOfBirth": "Nigeria",
+                "nationality": "Nigeria",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2020-09-07T21:10:48Z"
+            },
+            "team": {
+                "id": 472,
+                "name": "FC Crotone",
+                "shortName": "Crotone",
+                "tla": "CRO",
+                "crest": "https://crests.football-data.org/472.png",
+                "address": "Via Cutro Crotone 88900",
+                "phone": "+39 (0962) 28 919",
+                "website": "http://www.fccrotone.it",
+                "email": "info@fccrotone.it",
+                "founded": 1923,
+                "clubColors": "Blue / Red",
+                "venue": "Stadio Ezio Scida",
+                "lastUpdated": "2022-03-20T17:52:58Z"
+            },
+            "goals": 20,
+            "assists": 2,
+            "penalties": 8
+        },
+        {
+            "player": {
+                "id": 2092,
+                "name": "Lorenzo Insigne",
+                "firstName": "Lorenzo",
+                "lastName": "Insigne",
+                "dateOfBirth": "1991-06-04",
+                "countryOfBirth": "Italy",
+                "nationality": "Italy",
+                "position": "Midfielder",
+                "shirtNumber": null,
+                "lastUpdated": "2021-10-13T08:03:51Z"
+            },
+            "team": {
+                "id": 113,
+                "name": "SSC Napoli",
+                "shortName": "Napoli",
+                "tla": "NAP",
+                "crest": "https://crests.football-data.org/113.svg",
+                "address": "Centro Tecnico di Castel Volturno, Via S.S. Domitana, Km 35 Castel Volturno 81030",
+                "phone": "+39 (081) 5095344",
+                "website": "http://www.sscnapoli.it",
+                "email": "infocalcio@sscn.it",
+                "founded": 1904,
+                "clubColors": "Sky Blue / White",
+                "venue": "Stadio San Paolo",
+                "lastUpdated": "2020-11-26T02:19:45Z"
+            },
+            "goals": 19,
+            "assists": 8,
+            "penalties": 7
+        },
+        {
+            "player": {
+                "id": 3220,
+                "name": "Lautaro Martínez",
+                "firstName": "Lautaro Javier",
+                "lastName": null,
+                "dateOfBirth": "1997-08-22",
+                "countryOfBirth": "Argentina",
+                "nationality": "Argentina",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2020-09-07T21:10:27Z"
+            },
+            "team": {
+                "id": 108,
+                "name": "FC Internazionale Milano",
+                "shortName": "Inter",
+                "tla": "INT",
+                "crest": "https://crests.football-data.org/108.png",
+                "address": "Corso Vittorio Emanuele II 9 Milano 20122",
+                "phone": "+39 (02) 77151",
+                "website": "http://www.inter.it",
+                "email": "segreteriaccic@inter.it",
+                "founded": 1908,
+                "clubColors": "Blue / Black",
+                "venue": "Stadio Giuseppe Meazza",
+                "lastUpdated": "2021-11-24T14:55:58Z"
+            },
+            "goals": 17,
+            "assists": 5,
+            "penalties": 2
+        },
+        {
+            "player": {
+                "id": 2202,
+                "name": "Domenico Berardi",
+                "firstName": "Domenico",
+                "lastName": null,
+                "dateOfBirth": "1994-08-01",
+                "countryOfBirth": "Italy",
+                "nationality": "Italy",
+                "position": "Attacker",
+                "shirtNumber": null,
+                "lastUpdated": "2020-09-07T21:10:46Z"
+            },
+            "team": {
+                "id": 471,
+                "name": "US Sassuolo Calcio",
+                "shortName": "Sassuolo",
+                "tla": "SAS",
+                "crest": "https://crests.football-data.org/471.svg",
+                "address": "Piazza Risorgimento, 47 Sassuolo 41049",
+                "phone": "+39 (0536) 882645",
+                "website": "http://www.sassuolocalcio.it",
+                "email": "info@sassuolocalcio.it",
+                "founded": 1920,
+                "clubColors": "Green / Black",
+                "venue": "Mapei Stadium - Città del Tricolore",
+                "lastUpdated": "2021-04-12T13:07:30Z"
+            },
+            "goals": 17,
+            "assists": 7,
+            "penalties": 7
+        },
+        {
+            "player": {
+                "id": 1907,
+                "name": "João Pedro Galvão",
+                "firstName": "João Pedro Geraldino",
+                "lastName": null,
+                "dateOfBirth": "1992-03-09",
+                "countryOfBirth": "Brazil",
+                "nationality": "Italy",
+                "position": "Midfielder",
+                "shirtNumber": null,
+                "lastUpdated": "2022-01-25T07:53:22Z"
+            },
+            "team": {
+                "id": 104,
+                "name": "Cagliari Calcio",
+                "shortName": "Cagliari",
+                "tla": "CAG",
+                "crest": "https://crests.football-data.org/104.svg",
+                "address": "Viale la Plaia 15 Cagliari 09123",
+                "phone": "+39 (070) 604 201",
+                "website": "http://www.cagliaricalcio.net",
+                "email": "info@cagliaricalcio.net",
+                "founded": 1920,
+                "clubColors": "Red / Navy Blue / White",
+                "venue": "Sardegna Arena",
+                "lastUpdated": "2020-11-26T02:23:05Z"
+            },
+            "goals": 16,
+            "assists": 3,
+            "penalties": 4
+        }
+    ]
+}
+Available filters for Scorers
+Filter name	Possible values	Sample
+season
+
+An integer, like [\d]{4}
+
+/?season=2021
+
+matchday
+
+An integer, like [\d]{2}
+
+/?matchday=23
+
+Again you can combine the season and matchday filter. That way you can easily compare the current scorer list with former years.
+Matches
+You can use the Match Subresource to fetch a list of matches that are pre-filtered by the competition. Typically you use this in a regular interval to update basic information like dates and scores.
+
+Click here to see a sample implementation with some layers of plumbing and transformation code in between.
+
+curl -XGET 'https://api.football-data.org/v4/competitions/DED/matches?matchday=23' -H "X-Auth-Token: UR_TOKEN"
+{
+    "filters": {
+        "season": "2021",
+        "matchday": "23"
+    },
+    "resultSet": {
+        "count": 9,
+        "first": "2022-02-19",
+        "last": "2022-04-16",
+        "played": 9
+    },
+    "competition": {
+        "id": 2003,
+        "name": "Eredivisie",
+        "code": "DED",
+        "type": "LEAGUE",
+        "emblem": "https://crests.football-data.org/ED.png"
+    },
+    "matches": [ ... ]
+}
+You see the applied filters on the very top: by default the current season is used, as of writing this, this is season 2021/22. And we explicitly defined to return only matches of matchday 23. The resultSet node gives the boundaries of the match list, a count and how many matches are in status FINISHED. Last but not least the list of match items follows.
+
+Available filters for Match Subresource
+Filter name	Possible values	Sample
+season
+
+An integer, like [\d]{4}
+
+/?season=2021
+
+matchday
+
+An integer, like [\d]{2}
+
+/?matchday=23
+
+status
+
+Status enum
+
+/?status=FINISHED
+
+dateFrom
+
+A date in format yyyy-MM-dd
+
+/?dateFrom=2022-01-01
+
+dateTo
+
+A date in format yyyy-MM-dd
+
+/?dateTo=2022-01-10
+
+stage
+
+Stage enum, like defined at the very bottom
+
+/?stage=QUARTER_FINALS
+
+group
+
+Group enum, like defined at the very bottom
+
+/?group=GROUP_F
+
+Teams
+You can use the Team Subresource to fetch a list of teams that are pre-filtered by the a competition.
+
+curl -XGET 'https://api.football-data.org/v4/competitions/BL1/teams' -H "X-Auth-Token: UR_TOKEN"
+I omit the json response here as the structure is the very same as any team list shown here for instance.
+
+Available filters for Team Subresource
+Filter name	Possible values	Sample
+season
+
+An integer, like [\d]{4}
+
+/?season=2021
+
+Enums
+Some fields contain values that are defined by an Enum, which is useful to reveal, so here we go:
+
+Attribute name	Possible values
+stages
+
+FINAL | THIRD_PLACE | SEMI_FINALS | QUARTER_FINALS | LAST_16 | LAST_32 | LAST_64 | ROUND_4 | ROUND_3 | ROUND_2 | ROUND_1 | GROUP_STAGE | PRELIMINARY_ROUND | QUALIFICATION | QUALIFICATION_ROUND_1 | QUALIFICATION_ROUND_2 | QUALIFICATION_ROUND_3 | PLAYOFF_ROUND_1 | PLAYOFF_ROUND_2 | PLAYOFFS | REGULAR_SEASON | CLAUSURA | APERTURA | CHAMPIONSHIP_ROUND | RELEGATION_ROUND
+
+group
+
+GROUP_A | GROUP_B | GROUP_C | GROUP_D | GROUP_E | GROUP_F | GROUP_G | GROUP_H | GROUP_I | GROUP_J | GROUP_K | GROUP_L
+
+Match
+Overview
+The Match Resource reflects a scheduled football game. A game belongs to a competition and a season. It owns a stage and is typically played on a certain matchday. As mentioned in the introducing chapters the latter two are only attributes of a match, whereas competition and season are annotated object-like.
+
+If you need detailed information about former encounters between the teams, you can call the Head2head Subresource by appending /head2head to the URI.
+
+The list resource appears as subresource for the Competition, Team and Person Resource.
+
+Let’s see the entire beauty of the Match Resource underneath.
+
+curl -XGET 'https://api.football-data.org/v4/matches/330299' -H "X-Auth-Token: UR_TOKEN"
+{
+    "area": {
+        "id": 2081,
+        "name": "France",
+        "code": "FRA",
+        "flag": "https://crests.football-data.org/773.svg"
+    },
+    "competition": {
+        "id": 2015,
+        "name": "Ligue 1",
+        "code": "FL1",
+        "type": "LEAGUE",
+        "emblem": "https://crests.football-data.org/FL1.png"
+    },
+    "season": {
+        "id": 746,
+        "startDate": "2021-08-06",
+        "endDate": "2022-05-21",
+        "currentMatchday": 38,
+        "winner": null,
+        "stages": [
+            "REGULAR_SEASON"
+        ]
+    },
+    "id": 330299,
+    "utcDate": "2022-02-27T16:05:00Z",
+    "status": "FINISHED",
+    "minute": 90,
+    "injuryTime": 7,
+    "attendance": 16871,
+    "venue": "Stade de l'Aube",
+    "matchday": 26,
+    "stage": "REGULAR_SEASON",
+    "group": null,
+    "lastUpdated": "2022-06-06T08:20:24Z",
+    "homeTeam": {
+        "id": 531,
+        "name": "ES Troyes AC",
+        "shortName": "Troyes",
+        "tla": "ETR",
+        "crest": "https://crests.football-data.org/531.svg",
+        "coach": {
+            "id": 108988,
+            "name": "Bruno Irles",
+            "nationality": "France"
+        },
+        "leagueRank": null,
+        "formation": "3-4-1-2",
+        "lineup": [
+            {
+                "id": 899,
+                "name": "Gauthier Gallon",
+                "position": "Goalkeeper",
+                "shirtNumber": 30
+            },
+            {
+                "id": 8775,
+                "name": "Yoann Salmier",
+                "position": "Centre-Back",
+                "shirtNumber": 17
+            },
+            {
+                "id": 8348,
+                "name": "Adil Rami",
+                "position": "Centre-Back",
+                "shirtNumber": 23
+            },
+            {
+                "id": 9004,
+                "name": "Erik Palmer-Brown",
+                "position": "Centre-Back",
+                "shirtNumber": 2
+            },
+            {
+                "id": 123574,
+                "name": "Issa Kaboré",
+                "position": "Right-Back",
+                "shirtNumber": 29
+            },
+            {
+                "id": 37728,
+                "name": "Abdu Conté",
+                "position": "Left-Back",
+                "shirtNumber": 12
+            },
+            {
+                "id": 507,
+                "name": "Florian Tardieu",
+                "position": "Defensive Midfield",
+                "shirtNumber": 10
+            },
+            {
+                "id": 8623,
+                "name": "Tristan Dingomé",
+                "position": "Central Midfield",
+                "shirtNumber": 5
+            },
+            {
+                "id": 43707,
+                "name": "Mama Baldé",
+                "position": "Right Winger",
+                "shirtNumber": 25
+            },
+            {
+                "id": 8415,
+                "name": "Rominigue Kouamé",
+                "position": "Central Midfield",
+                "shirtNumber": 6
+            },
+            {
+                "id": 6406,
+                "name": "Iké Ugbo",
+                "position": "Centre-Forward",
+                "shirtNumber": 13
+            }
+        ],
+        "bench": [
+            {
+                "id": 74570,
+                "name": "Sébastien Rénot",
+                "position": "Goalkeeper",
+                "shirtNumber": 16
+            },
+            {
+                "id": 99805,
+                "name": "Giulian Biancone",
+                "position": "Right-Back",
+                "shirtNumber": 4
+            },
+            {
+                "id": 811,
+                "name": "Youssouf Koné",
+                "position": "Left-Back",
+                "shirtNumber": 3
+            },
+            {
+                "id": 133766,
+                "name": "Yasser Larouci",
+                "position": "Left-Back",
+                "shirtNumber": 22
+            },
+            {
+                "id": 8544,
+                "name": "Dylan Chambost",
+                "position": "Attacking Midfield",
+                "shirtNumber": 14
+            },
+            {
+                "id": 824,
+                "name": "Xavier Chavalerin",
+                "position": "Central Midfield",
+                "shirtNumber": 24
+            },
+            {
+                "id": 1043,
+                "name": "Lebo Mothiba",
+                "position": "Centre-Forward",
+                "shirtNumber": 26
+            },
+            {
+                "id": 519,
+                "name": "Yoann Touzghar",
+                "position": "Centre-Forward",
+                "shirtNumber": 7
+            },
+            {
+                "id": 169252,
+                "name": "Metinho",
+                "position": "Central Midfield",
+                "shirtNumber": 31
+            }
+        ],
+        "statistics": {
+            "corner_kicks": 4,
+            "free_kicks": 10,
+            "goal_kicks": 5,
+            "offsides": 4,
+            "fouls": 16,
+            "ball_possession": 41,
+            "saves": 1,
+            "throw_ins": 12,
+            "shots": 8,
+            "shots_on_goal": 3,
+            "shots_off_goal": 5,
+            "yellow_cards": 5,
+            "yellow_red_cards": 0,
+            "red_cards": 0
+        }
+    },
+    "awayTeam": {
+        "id": 516,
+        "name": "Olympique de Marseille",
+        "shortName": "Marseille",
+        "tla": "MAR",
+        "crest": "https://crests.football-data.org/516.png",
+        "coach": {
+            "id": 33636,
+            "name": "Jorge Sampaoli",
+            "nationality": "Argentina"
+        },
+        "leagueRank": null,
+        "formation": "4-3-3",
+        "lineup": [
+            {
+                "id": 32695,
+                "name": "Pau López",
+                "position": "Goalkeeper",
+                "shirtNumber": 16
+            },
+            {
+                "id": 80171,
+                "name": "William Saliba",
+                "position": "Centre-Back",
+                "shirtNumber": 2
+            },
+            {
+                "id": 10206,
+                "name": "Duje Ćaleta-Car",
+                "position": "Centre-Back",
+                "shirtNumber": 15
+            },
+            {
+                "id": 8346,
+                "name": "Boubacar Kamara",
+                "position": "Defensive Midfield",
+                "shirtNumber": 4
+            },
+            {
+                "id": 8695,
+                "name": "Valentin Rongier",
+                "position": "Central Midfield",
+                "shirtNumber": 21
+            },
+            {
+                "id": 1086,
+                "name": "Luan Peres",
+                "position": "Centre-Back",
+                "shirtNumber": 14
+            },
+            {
+                "id": 1815,
+                "name": "Gerson",
+                "position": "Central Midfield",
+                "shirtNumber": 8
+            },
+            {
+                "id": 600,
+                "name": "Mattéo Guendouzi",
+                "position": "Central Midfield",
+                "shirtNumber": 6
+            },
+            {
+                "id": 1818,
+                "name": "Cengiz Ünder",
+                "position": "Right Winger",
+                "shirtNumber": 17
+            },
+            {
+                "id": 8360,
+                "name": "Dimitri Payet",
+                "position": "Attacking Midfield",
+                "shirtNumber": 10
+            },
+            {
+                "id": 166640,
+                "name": "Ahmadou Bamba Dieng",
+                "position": null,
+                "shirtNumber": 12
+            }
+        ],
+        "bench": [
+            {
+                "id": 3356,
+                "name": "Steve Mandanda",
+                "position": "Goalkeeper",
+                "shirtNumber": 30
+            },
+            {
+                "id": 33108,
+                "name": "Álvaro González",
+                "position": "Centre-Back",
+                "shirtNumber": 3
+            },
+            {
+                "id": 7786,
+                "name": "Sead Kolašinac",
+                "position": "Left-Back",
+                "shirtNumber": 23
+            },
+            {
+                "id": 3714,
+                "name": "Amine Harit",
+                "position": "Attacking Midfield",
+                "shirtNumber": 7
+            },
+            {
+                "id": 633,
+                "name": "Pape Gueye",
+                "position": "Defensive Midfield",
+                "shirtNumber": 22
+            },
+            {
+                "id": 2105,
+                "name": "Arkadiusz Milik",
+                "position": "Centre-Forward",
+                "shirtNumber": 9
+            },
+            {
+                "id": 115074,
+                "name": "Luis Henrique",
+                "position": "Left Winger",
+                "shirtNumber": 11
+            },
+            {
+                "id": 21583,
+                "name": "Cédric Bakambu",
+                "position": "Centre-Forward",
+                "shirtNumber": 13
+            },
+            {
+                "id": 166642,
+                "name": "Pol Lirola",
+                "position": null,
+                "shirtNumber": 29
+            }
+        ],
+        "statistics": {
+            "corner_kicks": 8,
+            "free_kicks": 20,
+            "goal_kicks": 7,
+            "offsides": 0,
+            "fouls": 10,
+            "ball_possession": 59,
+            "saves": 2,
+            "throw_ins": 14,
+            "shots": 4,
+            "shots_on_goal": 2,
+            "shots_off_goal": 2,
+            "yellow_cards": 3,
+            "yellow_red_cards": 0,
+            "red_cards": 0
+        }
+    },
+    "score": {
+        "winner": "DRAW",
+        "duration": "REGULAR",
+        "fullTime": {
+            "home": 1,
+            "away": 1
+        },
+        "halfTime": {
+            "home": 0,
+            "away": 1
+        }
+    },
+    "goals": [
+        {
+            "minute": 28,
+            "injuryTime": null,
+            "type": "PENALTY",
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "scorer": {
+                "id": 8360,
+                "name": "Dimitri Payet"
+            },
+            "assist": null,
+            "score": {
+                "home": 0,
+                "away": 1
+            }
+        },
+        {
+            "minute": 90,
+            "injuryTime": null,
+            "type": "REGULAR",
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "scorer": {
+                "id": 519,
+                "name": "Yoann Touzghar"
+            },
+            "assist": {
+                "id": 811,
+                "name": "Youssouf Koné"
+            },
+            "score": {
+                "home": 1,
+                "away": 1
+            }
+        }
+    ],
+    "penalties": [
+        {
+            "player": {
+                "id": 8360,
+                "name": "Dimitri Payet"
+            },
+            "team": {
+                "id": null,
+                "name": null
+            },
+            "scored": true
+        }
+    ],
+    "bookings": [
+        {
+            "minute": 11,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "player": {
+                "id": 8695,
+                "name": "Valentin Rongier"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 27,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "player": {
+                "id": 43707,
+                "name": "Mama Baldé"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 36,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "player": {
+                "id": 507,
+                "name": "Florian Tardieu"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 36,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "player": {
+                "id": 8348,
+                "name": "Adil Rami"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 49,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "player": {
+                "id": 37728,
+                "name": "Abdu Conté"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 55,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "player": {
+                "id": 8360,
+                "name": "Dimitri Payet"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 85,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "player": {
+                "id": 32695,
+                "name": "Pau López"
+            },
+            "card": "YELLOW"
+        },
+        {
+            "minute": 90,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "player": {
+                "id": 99805,
+                "name": "Giulian Biancone"
+            },
+            "card": "YELLOW"
+        }
+    ],
+    "substitutions": [
+        {
+            "minute": 57,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "playerOut": {
+                "id": 8695,
+                "name": "Valentin Rongier"
+            },
+            "playerIn": {
+                "id": 166642,
+                "name": "Pol Lirola"
+            }
+        },
+        {
+            "minute": 57,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "playerOut": {
+                "id": 166640,
+                "name": "Ahmadou Bamba Dieng"
+            },
+            "playerIn": {
+                "id": 115074,
+                "name": "Luis Henrique"
+            }
+        },
+        {
+            "minute": 58,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "playerOut": {
+                "id": 6406,
+                "name": "Iké Ugbo"
+            },
+            "playerIn": {
+                "id": 1043,
+                "name": "Lebo Mothiba"
+            }
+        },
+        {
+            "minute": 59,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "playerOut": {
+                "id": 37728,
+                "name": "Abdu Conté"
+            },
+            "playerIn": {
+                "id": 811,
+                "name": "Youssouf Koné"
+            }
+        },
+        {
+            "minute": 77,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "playerOut": {
+                "id": 9004,
+                "name": "Erik Palmer-Brown"
+            },
+            "playerIn": {
+                "id": 99805,
+                "name": "Giulian Biancone"
+            }
+        },
+        {
+            "minute": 77,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "playerOut": {
+                "id": 43707,
+                "name": "Mama Baldé"
+            },
+            "playerIn": {
+                "id": 519,
+                "name": "Yoann Touzghar"
+            }
+        },
+        {
+            "minute": 78,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "playerOut": {
+                "id": 8360,
+                "name": "Dimitri Payet"
+            },
+            "playerIn": {
+                "id": 2105,
+                "name": "Arkadiusz Milik"
+            }
+        },
+        {
+            "minute": 86,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "playerOut": {
+                "id": 1818,
+                "name": "Cengiz Ünder"
+            },
+            "playerIn": {
+                "id": 633,
+                "name": "Pape Gueye"
+            }
+        },
+        {
+            "minute": 87,
+            "team": {
+                "id": 516,
+                "name": "Olympique de Marseille"
+            },
+            "playerOut": {
+                "id": 1086,
+                "name": "Luan Peres"
+            },
+            "playerIn": {
+                "id": 7786,
+                "name": "Sead Kolašinac"
+            }
+        },
+        {
+            "minute": 90,
+            "team": {
+                "id": 531,
+                "name": "ES Troyes AC"
+            },
+            "playerOut": {
+                "id": 8415,
+                "name": "Rominigue Kouamé"
+            },
+            "playerIn": {
+                "id": 824,
+                "name": "Xavier Chavalerin"
+            }
+        }
+    ],
+    "odds": {
+        "homeWin": 4.25,
+        "draw": 3.72,
+        "awayWin": 1.81
+    },
+    "referees": [
+        {
+            "id": 57080,
+            "name": "Cyril Mugnier",
+            "type": "ASSISTANT_REFEREE_N1",
+            "nationality": "France"
+        },
+        {
+            "id": 57049,
+            "name": "Mehdi Rahmouni",
+            "type": "ASSISTANT_REFEREE_N2",
+            "nationality": "France"
+        },
+        {
+            "id": 57031,
+            "name": "Alexandre Perreau Niel",
+            "type": "FOURTH_OFFICIAL",
+            "nationality": "France"
+        },
+        {
+            "id": 43918,
+            "name": "François Letexier",
+            "type": "REFEREE",
+            "nationality": "France"
+        },
+        {
+            "id": 57073,
+            "name": "Jérémie Pignard",
+            "type": "VIDEO_ASSISTANT_REFEREE_N1",
+            "nationality": "France"
+        },
+        {
+            "id": 166622,
+            "name": "Abdelali Chaoui",
+            "type": "VIDEO_ASSISTANT_REFEREE_N2",
+            "nationality": null
+        }
+    ]
+}
+Available filters for the list resource
+Filter name	Possible values	Sample	Description
+ids
+
+A list of integers, like [\d]{4}
+
+/?ids=333,3303,3213
+
+lists 3 matches with the given ids
+
+date
+
+A date in format yyyy-MM-dd
+
+/?date=2022-01-01
+
+Lists all matches for the given date
+
+dateFrom
+
+A date in format yyyy-MM-dd
+
+/?dateFrom=2022-01-01
+
+Must be used in conjunction with dateTo
+
+dateTo
+
+A date in format yyyy-MM-dd
+
+/?dateTo=2022-01-10
+
+Lists all matches before the given date until and including dateFrom
+
+status
+
+Status enum
+
+/?status=FINISHED
+
+only lists finished matches for the current day
+
+Status workflow explained
+The status field indicates the current phase a match is in. For the majority this is FINISHED (96,9% of all matches in my database contain that status) but how do matches get there? Lets try to depict that with a diagram. The slightly greenish boxes show the "happy flow".
+
+match status v4
+As soon as a match finds it’s way to the database and given there is a rough date set, it is stamped with status SCHEDULED. As soon the date is finalised with an exact date and time, the match enters status TIMED. It gets played (IN_PLAY), the players rest (PAUSED) and the final whistle pushes the match to FINISHED.
+
+The grey box shows the 'pseudo-status' LIVE, that you can use as a match filter. It’s just for convenience, so in the end it combines status IN_PLAY and PAUSED (and the backend does exactly that if you pass LIVE as value for status).
+
+Last but not least not all the time everything goes well, but I won’t go into detail here as I think everything is quite clear within the diagram.
+
+Enums
+Some fields contain values that are defined by an Enum, which is useful to reveal, so here we go:
+
+Attribute name	Possible values
+status
+
+SCHEDULED, TIMED, IN_PLAY, PAUSED, FINISHED, SUSPENDED, POSTPONED, CANCELLED, AWARDED
+
+stage
+
+FINAL | THIRD_PLACE | SEMI_FINALS | QUARTER_FINALS | LAST_16 | LAST_32 | LAST_64 | ROUND_4 | ROUND_3 | ROUND_2 | ROUND_1 | GROUP_STAGE | PRELIMINARY_ROUND | QUALIFICATION | QUALIFICATION_ROUND_1 | QUALIFICATION_ROUND_2 | QUALIFICATION_ROUND_3 | PLAYOFF_ROUND_1 | PLAYOFF_ROUND_2 | PLAYOFFS | REGULAR_SEASON | CLAUSURA | APERTURA | CHAMPIONSHIP_ROUND | RELEGATION_ROUND
+
+group
+
+GROUP_A | GROUP_B | GROUP_C | GROUP_D | GROUP_E | GROUP_F | GROUP_G | GROUP_H | GROUP_I | GROUP_J | GROUP_K | GROUP_L
+
+Area
+Overview
+The Area Resource is the most boring out there I’d say, but sometimes you might want to filter things on one or more countries or show a flag. Typically you fetch a list of areas. Some have parents (countries) and others (continents) have children. In the end it’s a straight-forward catalogue.
+
+curl -XGET 'https://api.football-data.org/v4/areas/2077' -H "X-Auth-Token: UR_TOKEN"
+{
+    "id": 2077,
+    "name": "Europe",
+    "code": "EUR",
+    "flag": "https://crests.football-data.org/EUR.svg",
+    "parentAreaId": 2267,
+    "parentArea": "World",
+    "childAreas": [
+        {
+            "id": 2002,
+            "name": "Albania",
+            "countryCode": "ALB",
+            "flag": null,
+            "parentAreaId": 2077,
+            "parentArea": "Europe"
+        },
+        {
+            "id": 2006,
+            "name": "Andorra",
+            "countryCode": "AND",
+            "flag": null,
+            "parentAreaId": 2077,
+            "parentArea": "Europe"
+        },
+        {
+            "id": 2012,
+            "name": "Armenia",
+            "countryCode": "ARM",
+            "flag": "https://crests.football-data.org/1970.svg",
+            "parentAreaId": 2077,
+            "parentArea": "Europe"
+        },
+        {
+            "id": 2016,
+            "name": "Austria",
+            "countryCode": "AUT",
+            "flag": "https://crests.football-data.org/816.svg",
+            "parentAreaId": 2077,
+            "parentArea": "Europe"
+        },
+        [... way more areas ...]
+        {
+            "id": 2264,
+            "name": "Wales",
+            "countryCode": "WAL",
+            "flag": "https://crests.football-data.org/833.svg",
+            "parentAreaId": 2077,
+            "parentArea": "Europe"
+        }
+    ]
+}
