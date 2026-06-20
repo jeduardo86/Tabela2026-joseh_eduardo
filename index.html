@@ -1835,24 +1835,27 @@
         'Czech Republic': 'Tchéquia', 'Canada': 'Canadá', 'Bosnia and Herzegovina': 'Bósnia e Herzegovina',
         'Qatar': 'Catar', 'Switzerland': 'Suíça', 'Brazil': 'Brasil', 'Morocco': 'Marrocos',
         'Haiti': 'Haiti', 'Scotland': 'Escócia', 'United States': 'Estados Unidos',
-        'Paraguay': 'Paraguai', 'Australia': 'Austrália', 'Turkey': 'Turquia',
+        'Paraguay': 'Paraguai', 'Australia': 'Austrália', 'Turkey': 'Turquia', 'Türkiye': 'Turquia',
         'Germany': 'Alemanha', 'Curaçao': 'Curaçao', 'Ivory Coast': 'Costa do Marfim',
         'Ecuador': 'Equador', 'Netherlands': 'Holanda', 'Japan': 'Japão', 'Sweden': 'Suécia',
         'Tunisia': 'Tunísia', 'Belgium': 'Bélgica', 'Egypt': 'Egito', 'Iran': 'Irã',
-        'New Zealand': 'Nova Zelândia', 'Spain': 'Espanha', 'Cape Verde Islands': 'Cabo Verde',
-        'Saudi Arabia': 'Arábia Saudita', 'Uruguay': 'Uruguai', 'France': 'França',
-        'Senegal': 'Senegal', 'Iraq': 'Iraque', 'Norway': 'Noruega', 'Argentina': 'Argentina',
-        'Algeria': 'Argélia', 'Austria': 'Áustria', 'Jordan': 'Jordânia', 'Portugal': 'Portugal',
-        'DR Congo': 'República Democrática do Congo', 'Uzbekistan': 'Uzbequistão',
-        'Colombia': 'Colômbia', 'England': 'Inglaterra', 'Croatia': 'Croácia',
-        'Ghana': 'Gana', 'Panama': 'Panamá'
+        'New Zealand': 'Nova Zelândia', 'Spain': 'Espanha', 'Cape Verde': 'Cabo Verde',
+        'Cape Verde Islands': 'Cabo Verde', 'Saudi Arabia': 'Arábia Saudita',
+        'Uruguay': 'Uruguai', 'France': 'França', 'Senegal': 'Senegal', 'Iraq': 'Iraque',
+        'Norway': 'Noruega', 'Argentina': 'Argentina', 'Algeria': 'Argélia',
+        'Austria': 'Áustria', 'Jordan': 'Jordânia', 'Portugal': 'Portugal',
+        'Czech Republic': 'Tchéquia', 'Czechia': 'Tchéquia',
+        'DR Congo': 'República Democrática do Congo', 'Congo DR': 'República Democrática do Congo',
+        'Uzbekistan': 'Uzbequistão', 'Colombia': 'Colômbia', 'England': 'Inglaterra',
+        'Croatia': 'Croácia', 'Ghana': 'Gana', 'Panama': 'Panamá'
     };
     function _espnParaApp(nomeEspn) {
         if (_ESPN_MAP[nomeEspn]) return _ESPN_MAP[nomeEspn];
-        // Fallback: tenta match parcial (ex: "Cape Verde" sem "Islands")
+        // Fallback: normaliza e tenta match parcial (remove acentos, lowercase)
+        var n = (nomeEspn || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         for (var k in _ESPN_MAP) {
-            if (k.toLowerCase().includes(nomeEspn.toLowerCase()) ||
-                nomeEspn.toLowerCase().includes(k.toLowerCase())) {
+            var kk = k.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if (kk.includes(n) || n.includes(kk)) {
                 return _ESPN_MAP[k];
             }
         }
@@ -1864,52 +1867,68 @@
         const btn = document.querySelector('.btn-api-search[data-grupo="' + grupo + '"][data-jogo="' + jogoIdx + '"]');
         if (btn) { btn.classList.add('loading'); btn.textContent = '⏳'; }
 
-        try {
-            const ctrl = new AbortController();
-            const timer = setTimeout(function() { ctrl.abort(); }, 15000);
+        // Extrai a data UTC do jogo a partir do timestamp (já convertido de BRT)
+        const jogo = gruposData[grupo] && gruposData[grupo].jogos[jogoIdx];
+        if (!jogo || !jogo.timestamp) {
+            showToast('❌ Dados do jogo inválidos.', true);
+            if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄'; }
+            return null;
+        }
+        // Converte timestamp UTC para YYYYMMDD e também tenta dia anterior/anterior
+        const dataUTC = new Date(jogo.timestamp);
+        const pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+        const yyyymmdd = dataUTC.getUTCFullYear() + pad(dataUTC.getUTCMonth() + 1) + pad(dataUTC.getUTCDate());
+        // Também tenta dia anterior (jogos que a ESPN pode ter indexado na data local)
+        const dataAnt = new Date(jogo.timestamp - 86400000);
+        const yyyymmddAnt = dataAnt.getUTCFullYear() + pad(dataAnt.getUTCMonth() + 1) + pad(dataAnt.getUTCDate());
+        // E dia seguinte
+        const dataSeg = new Date(jogo.timestamp + 86400000);
+        const yyyymmddSeg = dataSeg.getUTCFullYear() + pad(dataSeg.getUTCMonth() + 1) + pad(dataSeg.getUTCDate());
 
-            const resp = await fetch(_ESPN_API, { signal: ctrl.signal });
-            clearTimeout(timer);
+        const urls = [
+            _ESPN_API + '?dates=' + yyyymmdd,
+            _ESPN_API + '?dates=' + yyyymmddAnt,
+            _ESPN_API + '?dates=' + yyyymmddSeg
+        ];
 
-            if (!resp.ok) {
-                showToast('❌ ESPN indisponível (status ' + resp.status + '). Tente novamente.', true);
-                if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
-                return null;
-            }
+        for (var u = 0; u < urls.length; u++) {
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(function() { ctrl.abort(); }, 15000);
 
-            const data = await resp.json();
-            const eventos = data.events || [];
+                const resp = await fetch(urls[u], { signal: ctrl.signal });
+                clearTimeout(timer);
 
-            // Procura o jogo específico entre todos os eventos
-            for (var i = 0; i < eventos.length; i++) {
-                const ev = eventos[i];
-                const comps = ev.competitions || [];
-                if (!comps.length) continue;
-                const comp = comps[0];
-                const times = comp.competitors || [];
-                if (times.length < 2) continue;
+                if (!resp.ok) continue; // tenta próxima URL
 
-                const homeEN = times[0].team?.name || '';
-                const awayEN = times[1].team?.name || '';
-                const homeApp = _espnParaApp(homeEN);
-                const awayApp = _espnParaApp(awayEN);
+                const data = await resp.json();
+                const eventos = data.events || [];
 
-                // Verifica se os times batem (casa/fora ou invertido)
-                const matchDireto = (homeApp === timeCasa && awayApp === timeFora);
-                const matchInvertido = (homeApp === timeFora && awayApp === timeCasa);
+                for (var i = 0; i < eventos.length; i++) {
+                    const ev = eventos[i];
+                    const comps = ev.competitions || [];
+                    if (!comps.length) continue;
+                    const comp = comps[0];
+                    const times = comp.competitors || [];
+                    if (times.length < 2) continue;
 
-                if (matchDireto || matchInvertido) {
-                    const statusJogo = ev.status?.type?.name || '';
-                    // Só preenche placar se o jogo já terminou ou está em andamento
-                    if (statusJogo === 'STATUS_FINAL' || statusJogo === 'STATUS_FULL_TIME' ||
-                        statusJogo === 'STATUS_IN_PROGRESS' || statusJogo === 'STATUS_HALFTIME') {
-                        const golsCasaRaw = parseInt(times[0].score) || 0;
-                        const golsForaRaw = parseInt(times[1].score) || 0;
-                        const golsCasa = matchDireto ? golsCasaRaw : golsForaRaw;
-                        const golsFora = matchDireto ? golsForaRaw : golsCasaRaw;
+                    const homeEN = times[0].team?.name || '';
+                    const awayEN = times[1].team?.name || '';
+                    const homeApp = _espnParaApp(homeEN);
+                    const awayApp = _espnParaApp(awayEN);
 
-                        const jogo = gruposData[grupo] && gruposData[grupo].jogos[jogoIdx];
-                        if (jogo) {
+                    const matchDireto = (homeApp === timeCasa && awayApp === timeFora);
+                    const matchInvertido = (homeApp === timeFora && awayApp === timeCasa);
+
+                    if (matchDireto || matchInvertido) {
+                        const statusJogo = ev.status?.type?.name || '';
+                        if (statusJogo === 'STATUS_FINAL' || statusJogo === 'STATUS_FULL_TIME' ||
+                            statusJogo === 'STATUS_IN_PROGRESS' || statusJogo === 'STATUS_HALFTIME') {
+                            const golsCasaRaw = parseInt(times[0].score) || 0;
+                            const golsForaRaw = parseInt(times[1].score) || 0;
+                            const golsCasa = matchDireto ? golsCasaRaw : golsForaRaw;
+                            const golsFora = matchDireto ? golsForaRaw : golsCasaRaw;
+
                             jogo.golsCasa = golsCasa;
                             jogo.golsFora = golsFora;
                             salvarStorage();
@@ -1920,25 +1939,20 @@
                             showToast('✅ Placar: ' + timeCasa + ' ' + golsCasa + '—' + golsFora + ' ' + timeFora + statusLabel);
                             if (btn) { btn.classList.remove('loading'); btn.classList.add('success'); btn.textContent = '✅'; }
                             return { golsCasa, golsFora };
+                        } else {
+                            showToast('⏳ Jogo ainda não começou ou está agendado.', true);
+                            if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄'; }
+                            return null;
                         }
-                    } else {
-                        showToast('⏳ Jogo ainda não começou ou está agendado.', true);
-                        if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄'; }
-                        return null;
                     }
                 }
+            } catch(e) {
+                if (e.name === 'AbortError') continue; // timeout, tenta próxima URL
             }
-
-            showToast('🔍 Jogo não encontrado na ESPN. Pode ainda não estar disponível.', true);
-            if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
-        } catch(e) {
-            if (e.name === 'AbortError') {
-                showToast('❌ Tempo esgotado (15s). Verifique sua conexão.', true);
-            } else {
-                showToast('❌ Erro de rede: ' + e.message, true);
-            }
-            if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
         }
+
+        showToast('🔍 Jogo não encontrado na ESPN.', true);
+        if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
         if (btn) {
             setTimeout(function() {
                 btn.classList.remove('loading', 'success', 'error');
