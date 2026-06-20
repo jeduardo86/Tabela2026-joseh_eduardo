@@ -1835,10 +1835,37 @@
     // Plano: 10 req/min (14.400/dia) — o mais generoso.
     // =================================================================
     const API_BASE = 'https://api.football-data.org/v4';
-    const _B64 = 'YjFhMjE3YjM4MjhjNDQyNzk0OWExNDkwZDMzMTJlYWQ='; // ← cole aqui o Base64 gerado pelo btoa()
+    const _B64 = 'YjFhMjE3YjM4MjhjNDQyNzk0OWExNDkwZDMzMTJlYWQ=';
     function _apiKey() { return _B64 ? atob(_B64) : ''; }
 
+    // Controle de rate limit (10 req/min no plano gratuito)
+    let _rateLimitRestante = 10;      // requisições restantes neste minuto
+    let _rateLimitReset = 0;          // timestamp (ms) quando o limite reseta
+
+    function _atualizarRateLimit(resp) {
+        const disponivel = resp.headers.get('X-Requests-Available-Minute');
+        if (disponivel !== null) {
+            _rateLimitRestante = parseInt(disponivel);
+            _rateLimitReset = Date.now() + 60000; // ~1 min para resetar
+        }
+    }
+
+    function _podeRequisitar() {
+        // Se o minuto já passou, reseta
+        if (Date.now() > _rateLimitReset) {
+            _rateLimitRestante = 10;
+        }
+        return _rateLimitRestante > 0;
+    }
+
     async function buscarPlacarApi(grupo, jogoIdx, timeCasa, timeFora) {
+        // Verificar rate limit antes de começar
+        if (!_podeRequisitar()) {
+            const segundos = Math.ceil((_rateLimitReset - Date.now()) / 1000);
+            showToast('⏳ Limite de requisições atingido. Aguarde ' + segundos + 's.', true);
+            return null;
+        }
+
         showToast('🔄 Buscando placar online...');
         const btn = document.querySelector('.btn-api-search[data-grupo="' + grupo + '"][data-jogo="' + jogoIdx + '"]');
         if (btn) { btn.classList.add('loading'); btn.textContent = '⏳'; }
@@ -1847,13 +1874,21 @@
             const url = API_BASE + '/competitions/WC/matches?season=2026';
             const resp = await fetch(url, { headers: { 'X-Auth-Token': _apiKey() } });
 
+            // SEMPRE ler cabeçalhos de rate limit (mesmo em erro)
+            _atualizarRateLimit(resp);
+
             if (!resp.ok) {
                 var msg = resp.status === 403 ? 'Chave da API invalida ou expirada' :
-                            resp.status === 429 ? 'Limite de requisicoes excedido. Aguarde.' :
+                            resp.status === 429 ? 'Limite de requisicoes excedido. Aguarde 1 min.' :
                             'Erro ' + resp.status + ' ao consultar API';
                 showToast('❌ ' + msg, true);
                 if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
                 return null;
+            }
+
+            // Avisar se estiver perto do limite
+            if (_rateLimitRestante <= 2 && _rateLimitRestante > 0) {
+                showToast('⚠️ Apenas ' + _rateLimitRestante + ' requisição(oes) restante(s) neste minuto.');
             }
 
             var data = await resp.json();
