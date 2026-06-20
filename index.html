@@ -1120,7 +1120,9 @@
         const grupo = gruposData[grupoLetra];
         if (!grupo) return [];
         let stats = {};
-        grupo.times.forEach(time => { stats[time] = { pontos: 0, jogos: 0, vitorias: 0, gp: 0, gc: 0 }; });
+        grupo.times.forEach(time => { stats[time] = { pontos: 0, jogos: 0, vitorias: 0, empates: 0, derrotas: 0, gp: 0, gc: 0 }; });
+        // Armazenar resultados de confronto direto para desempate
+        let h2h = {}; // chave "timeA|timeB" -> { golsA, golsB }
         for (let j of grupo.jogos) {
             let gc = (j.golsCasa !== "" && !isNaN(parseInt(j.golsCasa))) ? parseInt(j.golsCasa) : null;
             let gf = (j.golsFora !== "" && !isNaN(parseInt(j.golsFora))) ? parseInt(j.golsFora) : null;
@@ -1128,13 +1130,44 @@
                 stats[j.timeCasa].jogos++; stats[j.timeFora].jogos++;
                 stats[j.timeCasa].gp += gc; stats[j.timeCasa].gc += gf;
                 stats[j.timeFora].gp += gf; stats[j.timeFora].gc += gc;
-                if (gc > gf) { stats[j.timeCasa].pontos += 3; stats[j.timeCasa].vitorias++; }
-                else if (gf > gc) { stats[j.timeFora].pontos += 3; stats[j.timeFora].vitorias++; }
-                else { stats[j.timeCasa].pontos += 1; stats[j.timeFora].pontos += 1; }
+                if (gc > gf) {
+                    stats[j.timeCasa].pontos += 3; stats[j.timeCasa].vitorias++;
+                    stats[j.timeFora].derrotas++;
+                } else if (gf > gc) {
+                    stats[j.timeFora].pontos += 3; stats[j.timeFora].vitorias++;
+                    stats[j.timeCasa].derrotas++;
+                } else {
+                    stats[j.timeCasa].pontos += 1; stats[j.timeFora].pontos += 1;
+                    stats[j.timeCasa].empates++; stats[j.timeFora].empates++;
+                }
+                // Registrar confronto direto
+                let k = [j.timeCasa, j.timeFora].sort().join('|');
+                if (!h2h[k]) h2h[k] = {};
+                h2h[k][j.timeCasa] = gc;
+                h2h[k][j.timeFora] = gf;
             }
         }
-        let lista = Object.keys(stats).map(time => ({ time, pontos: stats[time].pontos, jogos: stats[time].jogos, vitorias: stats[time].vitorias, gp: stats[time].gp, gc: stats[time].gc, sg: stats[time].gp - stats[time].gc }));
-        lista.sort((a,b) => { if (a.pontos !== b.pontos) return b.pontos - a.pontos; if (a.sg !== b.sg) return b.sg - a.sg; return b.gp - a.gp; });
+        let lista = Object.keys(stats).map(time => ({
+            time, pontos: stats[time].pontos, jogos: stats[time].jogos,
+            vitorias: stats[time].vitorias, empates: stats[time].empates, derrotas: stats[time].derrotas,
+            gp: stats[time].gp, gc: stats[time].gc, sg: stats[time].gp - stats[time].gc
+        }));
+        // Ordenação com critérios FIFA: pontos → SG → GP → confronto direto (pontos, SG, GP)
+        lista.sort((a, b) => {
+            if (a.pontos !== b.pontos) return b.pontos - a.pontos;
+            if (a.sg !== b.sg) return b.sg - a.sg;
+            if (a.gp !== b.gp) return b.gp - a.gp;
+            // Desempate por confronto direto (head-to-head)
+            let k = [a.time, b.time].sort().join('|');
+            let match = h2h[k];
+            if (match) {
+                let golsA = match[a.time] || 0;
+                let golsB = match[b.time] || 0;
+                if (golsA > golsB) return -1; // a venceu confronto direto
+                if (golsB > golsA) return 1;  // b venceu confronto direto
+            }
+            return 0;
+        });
         return lista;
     }
 
@@ -1142,12 +1175,13 @@
         let todos = [];
         for (let g in gruposData) {
             let tabela = calcularTabelaGrupo(g);
-            for (let i=0; i<tabela.length; i++) todos.push({ grupo: g, posicao: i+1, time: tabela[i].time, pontos: tabela[i].pontos, sg: tabela[i].sg });
+            for (let i=0; i<tabela.length; i++) todos.push({ grupo: g, posicao: i+1, time: tabela[i].time, pontos: tabela[i].pontos, sg: tabela[i].sg, gp: tabela[i].gp });
         }
         let primeiros = todos.filter(t => t.posicao === 1);
         let segundos = todos.filter(t => t.posicao === 2);
         let terceiros = todos.filter(t => t.posicao === 3);
-        terceiros.sort((a,b) => b.pontos - a.pontos || b.sg - a.sg);
+        // Critérios FIFA para melhores 3º: pontos → saldo de gols → gols marcados
+        terceiros.sort((a,b) => b.pontos - a.pontos || b.sg - a.sg || b.gp - a.gp);
         let melhoresTerceiros = terceiros.slice(0,8);
         return [...primeiros, ...segundos, ...melhoresTerceiros];
     }
@@ -1298,8 +1332,8 @@
     function renderTabelaGrupo(grupoLetra) {
         let tabela = calcularTabelaGrupo(grupoLetra);
         if (!tabela.length) return '';
-        return `<div class="tabela-class"><table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>${
-            tabela.map((row,idx)=>`<tr><td>${idx+1}</td><td class="time-nome-tab">${renderTimeComBandeira(row.time)}</td><td>${row.pontos}</td><td>${row.jogos}</td><td>${row.vitorias}</td><td>${row.gp}</td><td>${row.gc}</td><td>${row.sg}</td></tr>`).join('')
+        return `<div class="tabela-class"><table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>${
+            tabela.map((row,idx)=>`<tr><td>${idx+1}</td><td class="time-nome-tab">${renderTimeComBandeira(row.time)}</td><td>${row.pontos}</td><td>${row.jogos}</td><td>${row.vitorias}</td><td>${row.empates}</td><td>${row.derrotas}</td><td>${row.gp}</td><td>${row.gc}</td><td>${row.sg}</td></tr>`).join('')
         }</tbody></table></div>`;
     }
 
