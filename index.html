@@ -1152,22 +1152,78 @@
         return [...primeiros, ...segundos, ...melhoresTerceiros];
     }
 
+    // Estrutura correta da Segunda Fase (FIFA 2026): 16 slots com tipos específicos
+    // Tipos: 1v3 = 1º lugar vs Melhor 3º, 1v2 = 1º lugar vs 2º lugar, 2v2 = 2º vs 2º, 2v3 = 2º vs Melhor 3º
+    const SLOTS_SEGUNDA_FASE = [
+        { tipo: '1v3', t1_grupo: 'A', t3_grupos: 'CDEFGHI' },
+        { tipo: '2v2', t1_grupo: 'A', t2_grupo: 'B' },
+        { tipo: '1v3', t1_grupo: 'B', t3_grupos: 'ACDEFG' },
+        { tipo: '1v2', t1_grupo: 'F', t2_grupo: 'C' },
+        { tipo: '1v3', t1_grupo: 'C', t3_grupos: 'ABDEFG' },
+        { tipo: '1v2', t1_grupo: 'E', t2_grupo: 'D' },
+        { tipo: '1v3', t1_grupo: 'D', t3_grupos: 'ABCEFG' },
+        { tipo: '1v2', t1_grupo: 'I', t2_grupo: 'E' },
+        { tipo: '1v3', t1_grupo: 'G', t3_grupos: 'ABCDEF' },
+        { tipo: '1v2', t1_grupo: 'K', t2_grupo: 'H' },
+        { tipo: '1v3', t1_grupo: 'H', t3_grupos: 'ABCDEG' },
+        { tipo: '2v2', t1_grupo: 'F', t2_grupo: 'G' },
+        { tipo: '1v3', t1_grupo: 'J', t3_grupos: 'ABCDFH' },
+        { tipo: '1v2', t1_grupo: 'L', t2_grupo: 'I' },
+        { tipo: '2v2', t1_grupo: 'J', t2_grupo: 'K' },
+        { tipo: '2v3', t2_grupo: 'L', t3_grupos: 'EHIJK' }
+    ];
+
     function gerarSegundaFase(classificados) {
-        let primeiros = classificados.filter(c => c.posicao === 1).sort((a,b)=>a.grupo.localeCompare(b.grupo));
-        let segundos = classificados.filter(c => c.posicao === 2).sort((a,b)=>a.grupo.localeCompare(b.grupo));
-        let terceiros = classificados.filter(c => c.posicao === 3).sort((a,b)=>a.grupo.localeCompare(b.grupo));
-        let confrontos = [];
-        for (let i=0; i<Math.min(primeiros.length, terceiros.length); i++) confrontos.push({ time1: primeiros[i].time, time2: terceiros[i].time });
-        let idxSeg = 0;
-        while (confrontos.length < 16 && idxSeg+1 < segundos.length) { confrontos.push({ time1: segundos[idxSeg].time, time2: segundos[idxSeg+1].time }); idxSeg+=2; }
-        while (confrontos.length < 16) confrontos.push({ time1: "Classificado", time2: "Classificado" });
+        // Mapear times por posição e grupo
+        let primeiros = {};
+        let segundos = {};
+        for (let c of classificados) {
+            if (c.posicao === 1) primeiros[c.grupo] = c.time;
+            else if (c.posicao === 2) segundos[c.grupo] = c.time;
+        }
+        // Terceiros mantidos em array ordenado (já ordenados por pontos e saldo)
+        let terceirosArr = classificados.filter(c => c.posicao === 3);
+        let terceirosDisponiveis = [...terceirosArr]; // cópia para consumo
+
+        function consumirTerceiro(gruposPermitidos) {
+            // Procura terceiro de grupo permitido, senão pega qualquer disponível
+            for (let g of gruposPermitidos) {
+                let idx = terceirosDisponiveis.findIndex(t => t.grupo === g);
+                if (idx >= 0) {
+                    let t = terceirosDisponiveis[idx];
+                    terceirosDisponiveis.splice(idx, 1);
+                    return t.time;
+                }
+            }
+            // Fallback: pega qualquer terceiro restante
+            if (terceirosDisponiveis.length > 0) {
+                return terceirosDisponiveis.shift().time;
+            }
+            return "Classificado";
+        }
+
         let sf = [];
-        for (let i=0; i<16; i++) {
+        for (let i = 0; i < SLOTS_SEGUNDA_FASE.length; i++) {
+            let slot = SLOTS_SEGUNDA_FASE[i];
+            let time1 = "", time2 = "";
+            if (slot.tipo === '1v3') {
+                time1 = primeiros[slot.t1_grupo] || "Classificado";
+                time2 = consumirTerceiro(slot.t3_grupos.split(''));
+            } else if (slot.tipo === '1v2') {
+                time1 = primeiros[slot.t1_grupo] || "Classificado";
+                time2 = segundos[slot.t2_grupo] || "Classificado";
+            } else if (slot.tipo === '2v2') {
+                time1 = segundos[slot.t1_grupo] || "Classificado";
+                time2 = segundos[slot.t2_grupo] || "Classificado";
+            } else if (slot.tipo === '2v3') {
+                time1 = segundos[slot.t2_grupo] || "Classificado";
+                time2 = consumirTerceiro(slot.t3_grupos.split(''));
+            }
             let antigo = mataData.segundaFase[i] || {};
             sf.push({
-                id: i, time1: confrontos[i].time1, time2: confrontos[i].time2,
-                gols1: (antigo.time1 === confrontos[i].time1 && antigo.time2 === confrontos[i].time2) ? antigo.gols1 : "",
-                gols2: (antigo.time1 === confrontos[i].time1 && antigo.time2 === confrontos[i].time2) ? antigo.gols2 : "",
+                id: i, time1, time2,
+                gols1: (antigo.time1 === time1 && antigo.time2 === time2 && time1 !== "" && time2 !== "") ? (antigo.gols1 || "") : "",
+                gols2: (antigo.time1 === time1 && antigo.time2 === time2 && time1 !== "" && time2 !== "") ? (antigo.gols2 || "") : "",
                 info: mataInfo.segundaFase[i] || "A definir"
             });
         }
@@ -1177,49 +1233,47 @@
     function atualizarBracketCompleto() {
         // Segunda Fase: determinar vencedores
         for (let j of mataData.segundaFase) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
+        // Função auxiliar: preserva placar apenas se AMBOS os times são não-vazios E idênticos aos anteriores
+        function mesmoTime(novo, antigo) { return novo !== "" && novo === antigo; }
         // Oitavas (8 jogos): SOMENTE vencedores confirmados da Segunda Fase (sem fallback)
         let oitavas = [];
         for (let i=0; i<4; i++) {
             let v1 = mataData.segundaFase[i*4]?.vencedor || "";
             let v2 = mataData.segundaFase[i*4+1]?.vencedor || "";
             let ex = mataData.oitavas[i*2]||{};
-            let mesmoT1 = !v1 || v1 === ex.time1;
-            let mesmoT2 = !v2 || v2 === ex.time2;
-            oitavas.push({ time1: v1, time2: v2, gols1: mesmoT1&&mesmoT2 ? (ex.gols1||"") : "", gols2: mesmoT1&&mesmoT2 ? (ex.gols2||"") : "", info: mataInfo.oitavas[i*2] || "Oitavas", vencedor:null });
+            let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
+            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.oitavas[i*2] || "Oitavas", vencedor:null });
             v1 = mataData.segundaFase[i*4+2]?.vencedor || "";
             v2 = mataData.segundaFase[i*4+3]?.vencedor || "";
             ex = mataData.oitavas[i*2+1]||{};
-            mesmoT1 = !v1 || v1 === ex.time1;
-            mesmoT2 = !v2 || v2 === ex.time2;
-            oitavas.push({ time1: v1, time2: v2, gols1: mesmoT1&&mesmoT2 ? (ex.gols1||"") : "", gols2: mesmoT1&&mesmoT2 ? (ex.gols2||"") : "", info: mataInfo.oitavas[i*2+1] || "Oitavas", vencedor:null });
+            preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
+            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.oitavas[i*2+1] || "Oitavas", vencedor:null });
         }
         for (let j of oitavas) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
         mataData.oitavas = oitavas;
         // Quartas (4 jogos): SOMENTE vencedores confirmados das Oitavas
         let quartas = [];
-        for (let i=0; i<4; i++) { let v1 = mataData.oitavas[i*2]?.vencedor || ""; let v2 = mataData.oitavas[i*2+1]?.vencedor || ""; let ex = mataData.quartas[i]||{}; let mesmoT1 = !v1 || v1 === ex.time1; let mesmoT2 = !v2 || v2 === ex.time2; quartas.push({ time1: v1, time2: v2, gols1: mesmoT1&&mesmoT2 ? (ex.gols1||"") : "", gols2: mesmoT1&&mesmoT2 ? (ex.gols2||"") : "", info: mataInfo.quartas[i] || "Quartas", vencedor:null }); }
+        for (let i=0; i<4; i++) { let v1 = mataData.oitavas[i*2]?.vencedor || ""; let v2 = mataData.oitavas[i*2+1]?.vencedor || ""; let ex = mataData.quartas[i]||{}; let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2); quartas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.quartas[i] || "Quartas", vencedor:null }); }
         for (let q of quartas) { let g1 = (q.gols1!="" && !isNaN(parseInt(q.gols1)))?parseInt(q.gols1):null; let g2 = (q.gols2!="" && !isNaN(parseInt(q.gols2)))?parseInt(q.gols2):null; q.vencedor = (g1!==null && g2!==null) ? (g1>g2?q.time1:g2>g1?q.time2:null) : null; }
         mataData.quartas = quartas;
         // Semifinais: SOMENTE vencedores confirmados das Quartas
         let semis = [];
-        for (let i=0; i<2; i++) { let v1 = mataData.quartas[i*2]?.vencedor || ""; let v2 = mataData.quartas[i*2+1]?.vencedor || ""; let ex = mataData.semifinais[i]||{}; let mesmoT1 = !v1 || v1 === ex.time1; let mesmoT2 = !v2 || v2 === ex.time2; semis.push({ time1: v1, time2: v2, gols1: mesmoT1&&mesmoT2 ? (ex.gols1||"") : "", gols2: mesmoT1&&mesmoT2 ? (ex.gols2||"") : "", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null }); }
+        for (let i=0; i<2; i++) { let v1 = mataData.quartas[i*2]?.vencedor || ""; let v2 = mataData.quartas[i*2+1]?.vencedor || ""; let ex = mataData.semifinais[i]||{}; let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2); semis.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null }); }
         for (let s of semis) { let g1 = (s.gols1!="" && !isNaN(parseInt(s.gols1)))?parseInt(s.gols1):null; let g2 = (s.gols2!="" && !isNaN(parseInt(s.gols2)))?parseInt(s.gols2):null; s.vencedor = (g1!==null && g2!==null) ? (g1>g2?s.time1:g2>g1?s.time2:null) : null; }
         mataData.semifinais = semis;
         // Final: SOMENTE vencedores confirmados das Semifinais
         let finalEx = mataData.final;
         let finalT1 = semis[0]?.vencedor || "";
         let finalT2 = semis[1]?.vencedor || "";
-        let mesmoF1 = !finalT1 || finalT1 === finalEx?.time1;
-        let mesmoF2 = !finalT2 || finalT2 === finalEx?.time2;
-        mataData.final = { time1: finalT1, time2: finalT2, gols1: mesmoF1&&mesmoF2 ? (finalEx?.gols1||"") : "", gols2: mesmoF1&&mesmoF2 ? (finalEx?.gols2||"") : "", info: mataInfo.final, vencedor: null };
+        let preservarF = mesmoTime(finalT1, finalEx?.time1) && mesmoTime(finalT2, finalEx?.time2);
+        mataData.final = { time1: finalT1, time2: finalT2, gols1: preservarF ? (finalEx?.gols1||"") : "", gols2: preservarF ? (finalEx?.gols2||"") : "", info: mataInfo.final, vencedor: null };
         let f = mataData.final; let gf1 = (f.gols1!="" && !isNaN(parseInt(f.gols1)))?parseInt(f.gols1):null; let gf2 = (f.gols2!="" && !isNaN(parseInt(f.gols2)))?parseInt(f.gols2):null; f.vencedor = (gf1!==null && gf2!==null) ? (gf1>gf2?f.time1:gf2>gf1?f.time2:null) : null;
         // Terceiro lugar: SOMENTE perdedores confirmados das Semifinais (com placar)
         let tercEx = mataData.terceiroLugar;
         let perdedorSemi0 = (semis[0]?.gols1!=="" && semis[0]?.vencedor) ? (semis[0].vencedor===semis[0].time1 ? semis[0].time2 : semis[0].time1) : "";
         let perdedorSemi1 = (semis[1]?.gols1!=="" && semis[1]?.vencedor) ? (semis[1].vencedor===semis[1].time1 ? semis[1].time2 : semis[1].time1) : "";
-        let mesmoTerc1 = !perdedorSemi0 || perdedorSemi0 === tercEx?.time1;
-        let mesmoTerc2 = !perdedorSemi1 || perdedorSemi1 === tercEx?.time2;
-        mataData.terceiroLugar = { time1: perdedorSemi0, time2: perdedorSemi1, gols1: mesmoTerc1&&mesmoTerc2 ? (tercEx?.gols1||"") : "", gols2: mesmoTerc1&&mesmoTerc2 ? (tercEx?.gols2||"") : "", info: mataInfo.terceiro, vencedor: null };
+        let preservarT = mesmoTime(perdedorSemi0, tercEx?.time1) && mesmoTime(perdedorSemi1, tercEx?.time2);
+        mataData.terceiroLugar = { time1: perdedorSemi0, time2: perdedorSemi1, gols1: preservarT ? (tercEx?.gols1||"") : "", gols2: preservarT ? (tercEx?.gols2||"") : "", info: mataInfo.terceiro, vencedor: null };
     }
 
     function regenerarOitavasPorGrupos() {
@@ -1232,15 +1286,8 @@
             return;
         }
         let classif = calcularClassificados();
-        let novas = gerarSegundaFase(classif);
-        for (let i = 0; i < novas.length; i++) {
-            let antigo = mataData.segundaFase[i];
-            if (antigo && antigo.time1 === novas[i].time1 && antigo.time2 === novas[i].time2) {
-                novas[i].gols1 = antigo.gols1;
-                novas[i].gols2 = antigo.gols2;
-            }
-        }
-        mataData.segundaFase = novas;
+        // gerarSegundaFase já preserva placares quando os times não mudam
+        mataData.segundaFase = gerarSegundaFase(classif);
         atualizarBracketCompleto();
     }
 
@@ -1335,7 +1382,7 @@
         document.querySelectorAll('.mata-gol1, .mata-gol2').forEach(inp => { inp.removeEventListener('change', handleMataPlacar); inp.addEventListener('change', handleMataPlacar); });
     }
     function handleGrupoChange(e) { let inp=e.target; let grupo=inp.dataset.grupo, jogoIdx=parseInt(inp.dataset.jogo), lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let jogo=gruposData[grupo]?.jogos[jogoIdx]; if(jogo){ if(lado==="casa") jogo.golsCasa=valor; else jogo.golsFora=valor; salvarStorage(); regenerarOitavasPorGrupos(); renderCompleto(); } }
-    function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ if(lado==="1") mataData.segundaFase[idx].gols1=valor; else mataData.segundaFase[idx].gols2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].gols1=valor; else mataData.oitavas[idx].gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].gols1=valor; else mataData.quartas[idx].gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].gols1=valor; else mataData.semifinais[idx].gols2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.gols1=valor; else mataData.final.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.gols1=valor; else mataData.terceiroLugar.gols2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); renderGrupos(); } }
+    function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ if(lado==="1") mataData.segundaFase[idx].gols1=valor; else mataData.segundaFase[idx].gols2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].gols1=valor; else mataData.oitavas[idx].gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].gols1=valor; else mataData.quartas[idx].gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].gols1=valor; else mataData.semifinais[idx].gols2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.gols1=valor; else mataData.final.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.gols1=valor; else mataData.terceiroLugar.gols2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); } }
     function attachGruposToggleEvents() { document.querySelectorAll('[data-toggle-grupo]').forEach(h=>h.addEventListener('click', function(){ let g=this.dataset.toggleGrupo; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=this.querySelector('.toggle-icon'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.grupos[g]=!col; salvarStorage(); atualizarBotoesToggle(); } })); }
     function attachFaseToggleEvents() { document.querySelectorAll('[data-toggle-fase]').forEach(h=>h.addEventListener('click', function(){ let f=this.dataset.toggleFase; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=this.querySelector('.fase-toggle'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.fases[f]=!col; salvarStorage(); atualizarBotoesToggle(); } })); }
     function renderCompleto() { renderGrupos(); renderMataMata(); }
