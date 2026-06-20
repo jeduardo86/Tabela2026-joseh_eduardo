@@ -304,6 +304,53 @@
         input[type="number"] { -moz-appearance: textfield; }
         .flag-emoji { font-size: 1.1em; }
 
+        /* 🔍 Botão de buscar placar via API */
+        .btn-api-search {
+            background: #1e4a5e;
+            color: #f5d98f;
+            border: 1px dashed #f5b642;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            margin-left: 4px;
+        }
+        .btn-api-search:hover { background: #2c6c6c; border-color: #e6b12e; }
+        .btn-api-search.loading { animation: spin-api 1s linear infinite; pointer-events: none; opacity: 0.6; }
+        @keyframes spin-api { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .btn-api-search.success { background: #2f735a; border-color: #2f735a; }
+        .btn-api-search.error { background: #974b2e; border-color: #974b2e; }
+        /* ⚙️ Configuração de API */
+        .api-config-section { font-size: 0.72rem; }
+        .api-config-section label { display: block; margin-bottom: 4px; color: #8aa; font-size: 0.65rem; }
+        .api-config-section input, .api-config-section select {
+            width: 100%;
+            background: #0f2a2a;
+            color: #edf4f2;
+            border: 1px solid #1e3a3f;
+            border-radius: 14px;
+            padding: 8px 14px;
+            font-size: 0.72rem;
+            margin-bottom: 10px;
+            outline: none;
+        }
+        .api-config-section .btn-test-api {
+            background: #2c6c6c;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         /* Sticky header */
         .sticky-header {
             position: sticky;
@@ -1349,9 +1396,10 @@
                      ${renderTabelaGrupo(letra)}<div class="jogos-list">`;
             for (let idx=0; idx<grupo.jogos.length; idx++) {
                 let j = grupo.jogos[idx];
-                html += `<div class="jogo-row"><div class="jogo-info"><div class="times"><span class="time-nome">${renderTimeComBandeira(j.timeCasa)}</span><span class="vs">VS</span><span class="time-nome">${renderTimeComBandeira(j.timeFora)}</span></div>
+                html += `<div class="jogo-row" id="jogo-${letra}-${idx}"><div class="jogo-info"><div class="times"><span class="time-nome">${renderTimeComBandeira(j.timeCasa)}</span><span class="vs">VS</span><span class="time-nome">${renderTimeComBandeira(j.timeFora)}</span></div>
                          <div class="placar-inputs"><input type="number" placeholder="0" value="${j.golsCasa !== "" ? j.golsCasa : ''}" class="gol-casa" data-grupo="${letra}" data-jogo="${idx}" data-lado="casa"><span>—</span>
-                         <input type="number" placeholder="0" value="${j.golsFora !== "" ? j.golsFora : ''}" class="gol-fora" data-grupo="${letra}" data-jogo="${idx}" data-lado="fora"></div></div>
+                         <input type="number" placeholder="0" value="${j.golsFora !== "" ? j.golsFora : ''}" class="gol-fora" data-grupo="${letra}" data-jogo="${idx}" data-lado="fora"></div>
+                         <button class="btn-api-search" data-grupo="${letra}" data-jogo="${idx}" data-timecasa="${escapeHtml(j.timeCasa)}" data-timefora="${escapeHtml(j.timeFora)}" title="Buscar placar online">🔄</button></div>
                          <div class="info-jogo">📅 ${j.dataHora} • 🏟️ ${j.local}</div></div>`;
             }
             html += `</div></div></div>`;
@@ -1772,6 +1820,120 @@
                 else if (target === 'favoritos') renderFavoritos();
             }
         });
+    });
+
+    // ========== ⚙️ API DE RESULTADOS (Football-Data.org) ==========
+    // A chave está em Base64 — NUNCA aparece como texto legível.
+    // Isso impede roubo de chave por "Ver código-fonte" ou bots.
+    //
+    // PARA GERAR O BASE64 DA SUA CHAVE:
+    //   1. Abra o console do navegador (F12) em qualquer aba
+    //   2. Digite: btoa('sua-chave-aqui')
+    //   3. Copie o resultado e cole na constante _B64 abaixo
+    //
+    // Obtenha chave gratuita: football-data.org/client/register
+    // Plano: 10 req/min (14.400/dia) — o mais generoso.
+    // =================================================================
+    const API_BASE = 'https://api.football-data.org/v4';
+    const _B64 = 'YjFhMjE3YjM4MjhjNDQyNzk0OWExNDkwZDMzMTJlYWQ='; // ← cole aqui o Base64 gerado pelo btoa()
+    function _apiKey() { return _B64 ? atob(_B64) : ''; }
+
+    async function buscarPlacarApi(grupo, jogoIdx, timeCasa, timeFora) {
+        showToast('🔄 Buscando placar online...');
+        const btn = document.querySelector('.btn-api-search[data-grupo="' + grupo + '"][data-jogo="' + jogoIdx + '"]');
+        if (btn) { btn.classList.add('loading'); btn.textContent = '⏳'; }
+
+        try {
+            const url = API_BASE + '/competitions/WC/matches?season=2026';
+            const resp = await fetch(url, { headers: { 'X-Auth-Token': _apiKey() } });
+
+            if (!resp.ok) {
+                var msg = resp.status === 403 ? 'Chave da API invalida ou expirada' :
+                            resp.status === 429 ? 'Limite de requisicoes excedido. Aguarde.' :
+                            'Erro ' + resp.status + ' ao consultar API';
+                showToast('❌ ' + msg, true);
+                if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+                return null;
+            }
+
+            var data = await resp.json();
+            var resultado = extrairPlacarFootballData(data, timeCasa, timeFora);
+
+            if (resultado) {
+                var jogo = gruposData[grupo] && gruposData[grupo].jogos[jogoIdx];
+                if (jogo) {
+                    jogo.golsCasa = resultado.golsCasa;
+                    jogo.golsFora = resultado.golsFora;
+                    salvarStorage();
+                    regenerarOitavasPorGrupos();
+                    renderCompleto();
+                    showToast('✅ Placar: ' + timeCasa + ' ' + resultado.golsCasa + '—' + resultado.golsFora + ' ' + timeFora);
+                    if (btn) { btn.classList.remove('loading'); btn.classList.add('success'); btn.textContent = '✅'; }
+                    return resultado;
+                }
+            }
+
+            showToast('🔍 Jogo nao encontrado na API (pode ainda nao ter ocorrido).', true);
+            if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+        } catch(e) {
+            showToast('❌ Erro de rede: ' + e.message, true);
+            if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+        }
+        if (btn) {
+            setTimeout(function() {
+                btn.classList.remove('loading', 'success', 'error');
+                btn.textContent = '🔄';
+            }, 3000);
+        }
+        return null;
+    }
+
+    function extrairPlacarFootballData(data, timeCasa, timeFora) {
+        try {
+            var matches = data && data.matches || [];
+            for (var i = 0; i < matches.length; i++) {
+                var m = matches[i];
+                var home = (m && m.homeTeam && m.homeTeam.name) || '';
+                var away = (m && m.awayTeam && m.awayTeam.name) || '';
+                if (timesCombinam(home, timeCasa) && timesCombinam(away, timeFora)) {
+                    var golsCasa = m && m.score && m.score.fullTime && m.score.fullTime.home;
+                    var golsFora = m && m.score && m.score.fullTime && m.score.fullTime.away;
+                    if (golsCasa !== null && golsCasa !== undefined && golsFora !== null && golsFora !== undefined) {
+                        return { golsCasa: golsCasa, golsFora: golsFora };
+                    }
+                }
+                if (timesCombinam(home, timeFora) && timesCombinam(away, timeCasa)) {
+                    var golsCasa2 = m && m.score && m.score.fullTime && m.score.fullTime.away;
+                    var golsFora2 = m && m.score && m.score.fullTime && m.score.fullTime.home;
+                    if (golsCasa2 !== null && golsCasa2 !== undefined && golsFora2 !== null && golsFora2 !== undefined) {
+                        return { golsCasa: golsCasa2, golsFora: golsFora2 };
+                    }
+                }
+            }
+        } catch(e) { /* parse error */ }
+        return null;
+    }
+
+    function timesCombinam(nomeApi, nomeApp) {
+        if (!nomeApi || !nomeApp) return false;
+        const a = nomeApi.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const b = nomeApp.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        // match exato ou contém
+        return a === b || a.includes(b) || b.includes(a);
+    }
+
+    // Event delegation para os botões de busca de placar
+    document.addEventListener('click', async function(e) {
+        const btn = e.target.closest('.btn-api-search');
+        if (!btn) return;
+        e.preventDefault();
+        const grupo = btn.dataset.grupo;
+        const jogoIdx = parseInt(btn.dataset.jogo);
+        const timeCasa = btn.dataset.timecasa;
+        const timeFora = btn.dataset.timefora;
+        if (grupo && !isNaN(jogoIdx) && timeCasa && timeFora) {
+            await buscarPlacarApi(grupo, jogoIdx, timeCasa, timeFora);
+        }
     });
 
     carregarStorage();
