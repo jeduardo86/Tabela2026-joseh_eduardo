@@ -1,0 +1,828 @@
+Lookup Tables
+Quick access to information that you’ll love. Because I know it’s super convenient to find all possible values for a given something of an external system, below you can find all enum types used in my backend and exposed via API. I also provide aggregated lists of stuff you likely already came across in other parts of the documentation.
+
+Enum-Types
+Because I know it’s super convenient to find all possible values for a given something of an external system, below you can find all enum types used in my backend and exposed via API.
+
+Table 1. Enum-Types
+Resource	Attribute	Possible values
+Competition
+
+type
+
+LEAGUE | LEAGUE_CUP | CUP | PLAYOFFS
+
+Team
+
+type
+
+MEN_CLUB | MEN_NATIONAL | WOMEN_CLUB | WOMEN_NATIONAL
+
+Match
+
+status
+
+SCHEDULED | TIMED | IN_PLAY | PAUSED | EXTRA_TIME | PENALTY_SHOOTOUT | FINISHED | SUSPENDED | POSTPONED | CANCELLED | AWARDED
+
+Match
+
+stage
+
+FINAL | THIRD_PLACE | SEMI_FINALS | QUARTER_FINALS | LAST_16 | LAST_32 | LAST_64 | ROUND_4 | ROUND_3 | ROUND_2 | ROUND_1 | GROUP_STAGE | PRELIMINARY_ROUND | QUALIFICATION | QUALIFICATION_ROUND_1 | QUALIFICATION_ROUND_2 | QUALIFICATION_ROUND_3 | PLAYOFF_ROUND_1 | PLAYOFF_ROUND_2 | PLAYOFFS | REGULAR_SEASON | CLAUSURA | APERTURA | CHAMPIONSHIP | RELEGATION | RELEGATION_ROUND
+
+Match
+
+group
+
+GROUP_A | GROUP_B | GROUP_C | GROUP_D | GROUP_E | GROUP_F | GROUP_G | GROUP_H | GROUP_I | GROUP_J | GROUP_K | GROUP_L
+
+Penalty
+
+type
+
+MATCH | SHOOTOUT
+
+Score
+
+duration
+
+REGULAR | EXTRA_TIME | PENALTY_SHOOTOUT
+
+Card
+
+type
+
+YELLOW | YELLOW_RED | RED
+
+Goal
+
+type
+
+REGULAR | OWN | PENALTY
+
+Person with type REF
+
+role
+
+REFEREE | ASSISTANT_REFEREE_N1 | ASSISTANT_REFEREE_N2 | ASSISTANT_REFEREE_N3 | FOURTH_OFFICIAL | VIDEO_ASSISTANT_REFEREE_N1 | VIDEO_ASSISTANT_REFEREE_N2 | VIDEO_ASSISTANT_REFEREE_N3
+
+Request Headers
+Header-Name	Possible values	Description
+X-Auth-Token
+
+[a-z1-9]+
+
+Your authentication token
+
+X-Unfold-Lineups
+
+[ true | false ]
+
+Unfold lineups within the reponse or not
+
+X-Unfold-Bookings
+
+[ true | false ]
+
+Unfold bookings within the reponse or not
+
+X-Unfold-Subs
+
+[ true | false ]
+
+Unfold substitutions within the reponse or not
+
+X-Unfold-Goals
+
+[ true | false ]
+
+Unfold goals within the reponse or not
+
+Response Headers
+Examine the underneath HTTP response headers to debug responses that do not look like you expected.
+
+Header-Name	Example value	Description
+X-API-Version
+
+v4
+
+indicates the version you are using
+
+X-Authenticated-Client
+
+Jimbo Jones
+
+Shows the detected API-client or 'anonymous'
+
+X-RequestCounter-Reset
+
+23
+
+Defines the seconds left to reset your request counter.
+
+X-RequestsAvailable
+
+21
+
+Shows the remaining requests before being blocked.
+
+Filters
+Filter	Possible value(s)	Description
+id
+
+Integer /[0-9]+/
+
+The (unique) id of a resource.
+
+matchday
+
+Integer /[1-4]*[0-9]*/
+
+Drill down on a matchday; defaults to null
+
+areas
+
+comma separated string
+/\d+,\d+/
+
+Drill down on areas; defaults to null ⇒ all
+
+season
+
+String /\d\d\d\d/
+
+Defaults to the starting year of the current season, given as 4 digit like '2022'
+
+venue
+
+HOME|AWAY
+
+Define the venue of the matches to be returned.
+
+competitions
+
+comma separated string
+/\d+,\d+/
+
+A list of, comma separated competition-code(s) for drill down.
+
+date
+
+A date in format yyyy-MM-dd
+
+Drill down on a given date
+
+dateFrom
+
+A date in format yyyy-MM-dd
+
+Use in conjunction with dateTo
+
+dateTo
+
+A date in format yyyy-MM-dd
+
+Drill down on a given date range
+
+status
+
+Enum, see above
+
+Drill down on a (comma separated list of) status
+
+lineup
+
+STARTING | BENCH
+
+Lets you define the starting type of a player
+
+e
+
+GOAL | ASSIST | SUB_IN | SUB_OUT
+
+Lets you define an event
+
+limit
+
+Integer [1-500]
+
+Limit the result set
+
+offset
+
+Integer [1-500]
+
+Use an offset with a limit to traverse a huge list
+
+League-Codes
+I once added codes to all competitions so I did not need to remember the id any more. You’re welcome to make use of them as well, you can use them anywhere where you’d want to use the id.
+
+Table 2. League-Codes used in the Competition resource
+Competition Id	League-Code	Caption	Country/Continent
+2006
+
+QCAF
+
+WC Qualification CAF
+
+Africa
+
+2024
+
+ASL
+
+Liga Profesional
+
+Argentina
+
+2147
+
+QAFC
+
+WC Qualification AFC
+
+Asia
+
+2008
+
+AAL
+
+A League
+
+Australia
+
+2022
+
+APL
+
+Playoffs 1/2
+
+Austria
+
+2012
+
+ABL
+
+Bundesliga
+
+Austria
+
+2032
+
+BJPP
+
+Playoffs
+
+Belgium
+
+2009
+
+BJL
+
+Jupiler Pro League
+
+Belgium
+
+2029
+
+BSB
+
+Campeonato Brasileiro Série B
+
+Brazil
+
+2013
+
+BSA
+
+Campeonato Brasileiro Série A
+
+Brazil
+
+2048
+
+CPD
+
+Primera División
+
+Chile
+
+2044
+
+CSL
+
+Chinese Super League
+
+China PR
+
+2045
+
+CLP
+
+Liga Postobón
+
+Colombia
+
+2047
+
+PRVA
+
+Prva Liga
+
+Croatia
+
+2141
+
+DELP
+
+Euro League - Playoff
+
+Denmark
+
+2050
+
+DSU
+
+Superliga
+
+Denmark
+
+2016
+
+ELC
+
+Championship
+
+England
+
+2021
+
+PL
+
+Premier League
+
+England
+
+2139
+
+FLC
+
+Football League Cup
+
+England
+
+2030
+
+EL1
+
+League One
+
+England
+
+2053
+
+ENL
+
+National League
+
+England
+
+2054
+
+EL2
+
+League Two
+
+England
+
+2055
+
+FAC
+
+FA Cup
+
+England
+
+2056
+
+COM
+
+FA Community Shield
+
+England
+
+2018
+
+EC
+
+European Championship
+
+Europe
+
+2146
+
+EL
+
+UEFA Europa League
+
+Europe
+
+2154
+
+UCL
+
+UEFA Conference League
+
+Europe
+
+2001
+
+CL
+
+UEFA Champions League
+
+Europe
+
+2157
+
+ESC
+
+Supercup
+
+Europe
+
+2007
+
+QUFA
+
+WC Qualification UEFA
+
+Europe
+
+2031
+
+VEI
+
+Veikkausliiga
+
+Finland
+
+2142
+
+FL2
+
+Ligue 2
+
+France
+
+2143
+
+FPL
+
+Playoffs 1/2
+
+France
+
+2015
+
+FL1
+
+Ligue 1
+
+France
+
+2129
+
+REG
+
+Regionalliga
+
+Germany
+
+2134
+
+GSC
+
+DFL Super Cup
+
+Germany
+
+2140
+
+BL3
+
+3. Bundesliga
+
+Germany
+
+2156
+
+BLREL
+
+Relegation
+
+Germany
+
+2002
+
+BL1
+
+Bundesliga
+
+Germany
+
+2004
+
+BL2
+
+2. Bundesliga
+
+Germany
+
+2011
+
+DFB
+
+DFB-Pokal
+
+Germany
+
+2132
+
+GSL
+
+Super League
+
+Greece
+
+2128
+
+HNB
+
+NB I
+
+Hungary
+
+2125
+
+ILH
+
+Ligat ha’Al
+
+Israel
+
+2019
+
+SA
+
+Serie A
+
+Italy
+
+2121
+
+SB
+
+Serie B
+
+Italy
+
+2122
+
+CIT
+
+Coppa Italia
+
+Italy
+
+2123
+
+ISC
+
+Serie C
+
+Italy
+
+2158
+
+IPL
+
+Playoffs 1/2
+
+Italy
+
+2119
+
+JJL
+
+J. League
+
+Japan
+
+2113
+
+LMX
+
+Liga MX
+
+Mexico
+
+2109
+
+KNV
+
+KNVB Beker
+
+Netherlands
+
+2003
+
+DED
+
+Eredivisie
+
+Netherlands
+
+2005
+
+DJL
+
+Eerste Divisie
+
+Netherlands
+
+2106
+
+TIP
+
+Tippeligaen
+
+Norway
+
+2103
+
+QOFC
+
+WC Qualification OFC
+
+Oceania
+
+2101
+
+PPD
+
+Primera División
+
+Peru
+
+2017
+
+PPL
+
+Primeira Liga
+
+Portugal
+
+2094
+
+RL1
+
+Liga I
+
+Romania
+
+2137
+
+RFPL
+
+RFPL
+
+Russia
+
+2084
+
+SPL
+
+Premier League
+
+Scotland
+
+2152
+
+CLI
+
+Copa Libertadores
+
+South America
+
+2080
+
+CA
+
+Copa America
+
+South America
+
+2082
+
+QCBL
+
+WC Qualification CONMEBOL
+
+South America
+
+2077
+
+SD
+
+Segunda División
+
+Spain
+
+2079
+
+CDR
+
+Copa del Rey
+
+Spain
+
+2014
+
+PD
+
+Primera Division
+
+Spain
+
+2073
+
+ALL
+
+Allsvenskan
+
+Sweden
+
+2072
+
+SSL
+
+Super League
+
+Switzerland
+
+2070
+
+TSL
+
+Süper Lig
+
+Turkey
+
+2064
+
+UPL
+
+Premier Liha
+
+Ukraine
+
+2145
+
+MLS
+
+MLS
+
+United States
+
+2148
+
+SUCU
+
+Supercopa Uruguaya
+
+Uruguay
+
+2153
+
+OLY
+
+Summer Olympics
+
+World
+
+2000
+
+WC
+
+FIFA World Cup
+
+World
+
+2155
+
+QCCF
+
+WC Qualification CONCACAF
+
+World

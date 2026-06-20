@@ -1836,27 +1836,43 @@
     // =================================================================
     const API_BASE = 'https://api.football-data.org/v4';
     const _B64 = 'YjFhMjE3YjM4MjhjNDQyNzk0OWExNDkwZDMzMTJlYWQ=';
-    function _apiKey() { return _B64 ? atob(_B64) : ''; }
+    function _apiKey() {
+        try { return _B64 ? atob(_B64) : ''; }
+        catch(e) { return ''; }
+    }
 
     // Controle de rate limit (10 req/min no plano gratuito)
     let _rateLimitRestante = 10;      // requisições restantes neste minuto
     let _rateLimitReset = 0;          // timestamp (ms) quando o limite reseta
 
     function _atualizarRateLimit(resp) {
+        // Tenta ler o header oficial da API; se não vier, usa contagem local
         const disponivel = resp.headers.get('X-Requests-Available-Minute');
-        if (disponivel !== null) {
+        if (disponivel !== null && disponivel !== undefined) {
             _rateLimitRestante = parseInt(disponivel);
-            _rateLimitReset = Date.now() + 60000; // ~1 min para resetar
+            _rateLimitReset = Date.now() + 60000;
         }
     }
 
     function _podeRequisitar() {
-        // Se o minuto já passou, reseta
+        // Se o minuto já passou, reseta o contador E o timestamp
         if (Date.now() > _rateLimitReset) {
             _rateLimitRestante = 10;
+            _rateLimitReset = Date.now() + 60000;
         }
-        return _rateLimitRestante > 0;
+        if (_rateLimitRestante > 0) {
+            _rateLimitRestante--; // decrementa localmente (fallback se API não mandar header)
+            return true;
+        }
+        return false;
     }
+
+    // URLs alternativas para buscar a Copa 2026 (tenta na ordem)
+    const _API_URLS = [
+        '/competitions/WC/matches?season=2026',       // World Cup genérico
+        '/competitions/FWC/matches?season=2026',      // FIFA World Cup
+        '/competitions/2000/matches?season=2026'      // FIFA World Cup ID numérico
+    ];
 
     async function buscarPlacarApi(grupo, jogoIdx, timeCasa, timeFora) {
         // Verificar rate limit antes de começar
@@ -1870,50 +1886,79 @@
         const btn = document.querySelector('.btn-api-search[data-grupo="' + grupo + '"][data-jogo="' + jogoIdx + '"]');
         if (btn) { btn.classList.add('loading'); btn.textContent = '⏳'; }
 
-        try {
-            const url = API_BASE + '/competitions/WC/matches?season=2026';
-            const resp = await fetch(url, { headers: { 'X-Auth-Token': _apiKey() } });
+        var ultimoStatus = 0;
+        for (var u = 0; u < _API_URLS.length; u++) {
+            try {
+                const url = API_BASE + _API_URLS[u];
+                // Timeout de 20s via AbortController (evita 408 do navegador)
+                const ctrl = new AbortController();
+                const timer = setTimeout(function() { ctrl.abort(); }, 20000);
 
-            // SEMPRE ler cabeçalhos de rate limit (mesmo em erro)
-            _atualizarRateLimit(resp);
+                const resp = await fetch(url, {
+                    headers: { 'X-Auth-Token': _apiKey() },
+                    signal: ctrl.signal
+                });
+                clearTimeout(timer);
 
-            if (!resp.ok) {
-                var msg = resp.status === 403 ? 'Chave da API invalida ou expirada' :
-                            resp.status === 429 ? 'Limite de requisicoes excedido. Aguarde 1 min.' :
-                            'Erro ' + resp.status + ' ao consultar API';
-                showToast('❌ ' + msg, true);
-                if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
-                return null;
-            }
+                // SEMPRE ler cabeçalhos de rate limit
+                _atualizarRateLimit(resp);
+                ultimoStatus = resp.status;
 
-            // Avisar se estiver perto do limite
-            if (_rateLimitRestante <= 2 && _rateLimitRestante > 0) {
-                showToast('⚠️ Apenas ' + _rateLimitRestante + ' requisição(oes) restante(s) neste minuto.');
-            }
+                if (resp.ok) {
+                    // Avisar se estiver perto do limite
+                    if (_rateLimitRestante <= 2 && _rateLimitRestante > 0) {
+                        showToast('⚠️ Apenas ' + _rateLimitRestante + ' requisição(oes) restante(s) neste minuto.');
+                    }
 
-            var data = await resp.json();
-            var resultado = extrairPlacarFootballData(data, timeCasa, timeFora);
+                    var data = await resp.json();
+                    var resultado = extrairPlacarFootballData(data, timeCasa, timeFora);
 
-            if (resultado) {
-                var jogo = gruposData[grupo] && gruposData[grupo].jogos[jogoIdx];
-                if (jogo) {
-                    jogo.golsCasa = resultado.golsCasa;
-                    jogo.golsFora = resultado.golsFora;
-                    salvarStorage();
-                    regenerarOitavasPorGrupos();
-                    renderCompleto();
-                    showToast('✅ Placar: ' + timeCasa + ' ' + resultado.golsCasa + '—' + resultado.golsFora + ' ' + timeFora);
-                    if (btn) { btn.classList.remove('loading'); btn.classList.add('success'); btn.textContent = '✅'; }
-                    return resultado;
+                    if (resultado) {
+                        var jogo = gruposData[grupo] && gruposData[grupo].jogos[jogoIdx];
+                        if (jogo) {
+                            jogo.golsCasa = resultado.golsCasa;
+                            jogo.golsFora = resultado.golsFora;
+                            salvarStorage();
+                            regenerarOitavasPorGrupos();
+                            renderCompleto();
+                            showToast('✅ Placar: ' + timeCasa + ' ' + resultado.golsCasa + '—' + resultado.golsFora + ' ' + timeFora);
+                            if (btn) { btn.classList.remove('loading'); btn.classList.add('success'); btn.textContent = '✅'; }
+                            return resultado;
+                        }
+                    }
+                    // API respondeu mas não achou o jogo — tenta próxima URL
+                    continue;
                 }
-            }
 
-            showToast('🔍 Jogo nao encontrado na API (pode ainda nao ter ocorrido).', true);
-            if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
-        } catch(e) {
-            showToast('❌ Erro de rede: ' + e.message, true);
-            if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+                if (resp.status === 403) {
+                    showToast('❌ Chave da API inválida ou expirada.', true);
+                    if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+                    return null; // não adianta tentar outras URLs com chave inválida
+                }
+                if (resp.status === 429) {
+                    showToast('❌ Limite de requisições excedido. Aguarde 1 min.', true);
+                    if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+                    return null;
+                }
+                // 404, 408, etc — tenta próxima URL
+
+            } catch(e) {
+                ultimoStatus = 0;
+                if (e.name === 'AbortError') {
+                    showToast('❌ Tempo esgotado (20s). Verifique sua conexão.', true);
+                    if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+                    return null;
+                }
+                // Outros erros de rede — tenta próxima URL
+            }
         }
+
+        // Todas as URLs falharam
+        var msg = ultimoStatus === 404 ? 'Copa 2026 não encontrada na API. Pode ainda não estar disponível no plano gratuito.' :
+                  ultimoStatus === 408 ? 'API não respondeu a tempo. Tente novamente.' :
+                  'Erro ' + (ultimoStatus || 'de rede') + ' ao consultar. Tente novamente.';
+        showToast('❌ ' + msg, true);
+        if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
         if (btn) {
             setTimeout(function() {
                 btn.classList.remove('loading', 'success', 'error');
