@@ -779,6 +779,79 @@
             font-size: 0.62rem;
             color: #f5d98f;
         }
+        /* 🏆 Classificação Geral */
+        .classificacao-container {
+            font-size: 0.72rem;
+            color: #c5d6d6;
+        }
+        .classificacao-section {
+            margin-bottom: 12px;
+        }
+        .classificacao-section h4 {
+            color: #f5d98f;
+            font-size: 0.85rem;
+            margin: 0 0 6px 0;
+            padding-left: 4px;
+        }
+        .classificacao-tabela {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.68rem;
+        }
+        .classificacao-tabela th {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #8aa;
+            padding: 5px 4px;
+            border-bottom: 1px solid #1e3a3f;
+            white-space: nowrap;
+        }
+        .classificacao-tabela th:first-child,
+        .classificacao-tabela td:first-child { padding-left: 6px; }
+        .classificacao-tabela td {
+            text-align: center;
+            padding: 4px 4px;
+            border-bottom: 1px solid #0f2a2a;
+            white-space: nowrap;
+        }
+        .classificacao-tabela td.time-nome-tab {
+            text-align: left;
+            padding-left: 6px;
+        }
+        .classificacao-tabela tr.destaque-terceiro {
+            background: #1a4a3a;
+        }
+        .classificacao-tabela tr.destaque-terceiro td {
+            color: #b8f0d0;
+            font-weight: 600;
+        }
+        .classificacao-tabela tr.nao-classificado {
+            opacity: 0.55;
+        }
+        .classificacao-tabela .badge-pos {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            font-size: 0.6rem;
+            font-weight: bold;
+            text-align: center;
+            background: #1e3a3f;
+            color: #c5d6d6;
+        }
+        .classificacao-tabela tr.destaque-terceiro .badge-pos {
+            background: #2f735a;
+            color: #b8f0d0;
+        }
+        .classificacao-tabela .flag-emoji { font-size: 1em; }
+        .classificacao-legenda {
+            font-size: 0.6rem;
+            color: #8aa;
+            margin-top: 4px;
+            padding-left: 4px;
+        }
+        }
 
         /* 📱 Mobile: fontes maiores para legibilidade no celular */
         @media (max-width: 600px) {
@@ -995,6 +1068,18 @@
             .api-config-section .btn-test-api {
                 font-size: 0.82rem;
             }
+            .classificacao-container {
+                font-size: 0.82rem;
+            }
+            .classificacao-section h4 {
+                font-size: 0.95rem;
+            }
+            .classificacao-tabela th {
+                font-size: 0.7rem;
+            }
+            .classificacao-tabela td {
+                font-size: 0.78rem;
+            }
             .pwa-toast {
                 font-size: 0.9rem;
             }
@@ -1055,6 +1140,7 @@
                 <button class="menu-tab" data-menu-tab="selecoes">🌎 Seleções</button>
                 <button class="menu-tab" data-menu-tab="estatisticas">📊 Estatísticas</button>
                 <button class="menu-tab" data-menu-tab="favoritos">⭐ Favoritos</button>
+                <button class="menu-tab" data-menu-tab="classificacao">🏆 Classificação</button>
             </div>
             <div class="menu-tab-content" data-menu-content="instrucoes">
                 <ul>
@@ -1081,6 +1167,9 @@
                 <div id="favoritosConteudo" class="favoritos-container">
                     <div class="favoritos-empty">⭐ Nenhuma seleção favorita ainda.<br>Vá na aba <strong>🌎 Seleções</strong> e toque na ⭐ para adicionar.</div>
                 </div>
+            </div>
+            <div class="menu-tab-content" data-menu-content="classificacao">
+                <div id="classificacaoConteudo" class="classificacao-container"></div>
             </div>
             <div class="menu-tab-content active" data-menu-content="calendario">
                 <div class="calendario-nav">
@@ -2007,6 +2096,83 @@
     }
     document.getElementById('buscaSelecao')?.addEventListener('input', renderSelecoes);
 
+    // ========== 🏆 CLASSIFICAÇÃO GERAL ==========
+    function renderClassificacao() {
+        const container = document.getElementById('classificacaoConteudo');
+        if (!container) return;
+        
+        // Coleta todos os times com estatísticas completas
+        let todos = [];
+        for (let g in gruposData) {
+            let tabela = calcularTabelaGrupo(g);
+            for (let i = 0; i < tabela.length; i++) {
+                todos.push({
+                    grupo: g,
+                    posicao: i + 1,
+                    time: tabela[i].time,
+                    pontos: tabela[i].pontos,
+                    jogos: tabela[i].jogos,
+                    vitorias: tabela[i].vitorias,
+                    empates: tabela[i].empates,
+                    derrotas: tabela[i].derrotas,
+                    gp: tabela[i].gp,
+                    gc: tabela[i].gc,
+                    sg: tabela[i].sg
+                });
+            }
+        }
+        
+        // --- Classificação Geral (todos os 48 times) ---
+        let geral = [...todos].sort((a, b) =>
+            b.pontos - a.pontos || b.sg - a.sg || b.gp - a.gp || (a.time.localeCompare(b.time))
+        );
+        
+        let html = '<div class="classificacao-section">';
+        html += '<h4>📊 Classificação Geral</h4>';
+        html += '<div style="overflow-x:auto;"><table class="classificacao-tabela"><thead><tr>';
+        html += '<th>#</th><th>Seleção</th><th>G</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th>';
+        html += '</tr></thead><tbody>';
+        geral.forEach((t, i) => {
+            html += `<tr>
+                <td><span class="badge-pos">${i + 1}</span></td>
+                <td class="time-nome-tab"><span class="flag-emoji">${getFlag(t.time)}</span> ${escapeHtml(t.time)}</td>
+                <td style="color:#8aa;">${t.grupo}</td>
+                <td><strong>${t.pontos}</strong></td>
+                <td>${t.jogos}</td><td>${t.vitorias}</td><td>${t.empates}</td><td>${t.derrotas}</td>
+                <td>${t.gp}</td><td>${t.gc}</td><td style="color:${t.sg > 0 ? '#7ddf90' : t.sg < 0 ? '#e07070' : '#8aa'};">${t.sg >= 0 ? '+' + t.sg : t.sg}</td>
+            </tr>`;
+        });
+        html += '</tbody></table></div></div>';
+        
+        // --- Classificação dos 3º lugares ---
+        let terceiros = todos.filter(t => t.posicao === 3);
+        terceiros.sort((a, b) => b.pontos - a.pontos || b.sg - a.sg || b.gp - a.gp);
+        
+        html += '<div class="classificacao-section">';
+        html += '<h4>🥉 Classificação dos 3º Lugares</h4>';
+        html += '<div style="overflow-x:auto;"><table class="classificacao-tabela"><thead><tr>';
+        html += '<th>#</th><th>Seleção</th><th>G</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>Status</th>';
+        html += '</tr></thead><tbody>';
+        terceiros.forEach((t, i) => {
+            let classe = i < 8 ? 'destaque-terceiro' : 'nao-classificado';
+            let status = i < 8 ? '✅ Classificado' : '❌ Eliminado';
+            html += `<tr class="${classe}">
+                <td><span class="badge-pos">${i + 1}</span></td>
+                <td class="time-nome-tab"><span class="flag-emoji">${getFlag(t.time)}</span> ${escapeHtml(t.time)}</td>
+                <td style="color:#8aa;">${t.grupo}</td>
+                <td><strong>${t.pontos}</strong></td>
+                <td>${t.jogos}</td><td>${t.vitorias}</td><td>${t.empates}</td><td>${t.derrotas}</td>
+                <td>${t.gp}</td><td>${t.gc}</td><td style="color:${t.sg > 0 ? '#7ddf90' : t.sg < 0 ? '#e07070' : '#8aa'};">${t.sg >= 0 ? '+' + t.sg : t.sg}</td>
+                <td style="font-size:0.62rem;">${status}</td>
+            </tr>`;
+        });
+        html += '</tbody></table></div>';
+        html += '<div class="classificacao-legenda">🟢 <strong>Destaque verde</strong> = 8 melhores 3º colocados (classificam ao mata-mata) • Cinza = eliminados</div>';
+        html += '</div>';
+        
+        container.innerHTML = html;
+    }
+
     // ========== 📊 ESTATÍSTICAS ==========
     function renderEstatisticas() {
         const container = document.getElementById('estatisticasConteudo');
@@ -2089,6 +2255,7 @@
                 else if (target === 'selecoes') renderSelecoes();
                 else if (target === 'estatisticas') renderEstatisticas();
                 else if (target === 'favoritos') renderFavoritos();
+                else if (target === 'classificacao') renderClassificacao();
             }
         });
     });
