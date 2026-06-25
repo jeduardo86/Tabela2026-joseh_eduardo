@@ -1313,45 +1313,45 @@
 
     // Labels dos confrontos do mata-mata (bracket oficial FIFA 2026)
     const LABELS_SEGUNDA_FASE = [
-        { t1: "1º A", t2: "Melhor 3º (C/D/E/F/G/H/I)" },
         { t1: "2º A", t2: "2º B" },
-        { t1: "1º B", t2: "Melhor 3º (A/C/D/E/F/G)" },
+        { t1: "1º E", t2: "Melhor 3º (A/B/C/D/F)" },
         { t1: "1º F", t2: "2º C" },
-        { t1: "1º C", t2: "Melhor 3º (A/B/D/E/F/G)" },
-        { t1: "1º E", t2: "2º D" },
-        { t1: "1º D", t2: "Melhor 3º (A/B/C/E/F/G)" },
-        { t1: "1º I", t2: "2º E" },
-        { t1: "1º G", t2: "Melhor 3º (A/B/C/D/E/F)" },
-        { t1: "1º K", t2: "2º H" },
-        { t1: "1º H", t2: "Melhor 3º (A/B/C/D/E/G)" },
-        { t1: "2º F", t2: "2º G" },
-        { t1: "1º J", t2: "Melhor 3º (A/B/C/D/F/H)" },
-        { t1: "1º L", t2: "2º I" },
-        { t1: "2º J", t2: "2º K" },
-        { t1: "2º L", t2: "Melhor 3º (E/H/I/J/K)" }
+        { t1: "1º C", t2: "2º F" },
+        { t1: "1º I", t2: "Melhor 3º (C/D/F/G/H)" },
+        { t1: "2º E", t2: "2º I" },
+        { t1: "1º A", t2: "Melhor 3º (C/E/F/H/I)" },
+        { t1: "1º L", t2: "Melhor 3º (E/H/I/J/K)" },
+        { t1: "1º D", t2: "Melhor 3º (B/E/F/I/J)" },
+        { t1: "1º G", t2: "Melhor 3º (A/E/H/I/J)" },
+        { t1: "2º K", t2: "2º L" },
+        { t1: "1º H", t2: "2º J" },
+        { t1: "1º B", t2: "Melhor 3º (E/F/G/I/J)" },
+        { t1: "1º J", t2: "2º H" },
+        { t1: "1º K", t2: "Melhor 3º (D/E/I/J/L)" },
+        { t1: "2º D", t2: "2º G" }
     ];
 
     const LABELS_OITAVAS = [
-        { t1: "Venc. SF 1", t2: "Venc. SF 2" },
-        { t1: "Venc. SF 3", t2: "Venc. SF 4" },
-        { t1: "Venc. SF 5", t2: "Venc. SF 6" },
-        { t1: "Venc. SF 7", t2: "Venc. SF 8" },
-        { t1: "Venc. SF 9", t2: "Venc. SF 10" },
-        { t1: "Venc. SF 11", t2: "Venc. SF 12" },
-        { t1: "Venc. SF 13", t2: "Venc. SF 14" },
-        { t1: "Venc. SF 15", t2: "Venc. SF 16" }
+        { t1: "Venc. Jogo 74", t2: "Venc. Jogo 77" },
+        { t1: "Venc. Jogo 73", t2: "Venc. Jogo 75" },
+        { t1: "Venc. Jogo 76", t2: "Venc. Jogo 78" },
+        { t1: "Venc. Jogo 79", t2: "Venc. Jogo 80" },
+        { t1: "Venc. Jogo 83", t2: "Venc. Jogo 84" },
+        { t1: "Venc. Jogo 81", t2: "Venc. Jogo 82" },
+        { t1: "Venc. Jogo 86", t2: "Venc. Jogo 88" },
+        { t1: "Venc. Jogo 85", t2: "Venc. Jogo 87" }
     ];
 
     const LABELS_QUARTAS = [
-        { t1: "Venc. Oit. 1", t2: "Venc. Oit. 2" },
-        { t1: "Venc. Oit. 3", t2: "Venc. Oit. 4" },
-        { t1: "Venc. Oit. 5", t2: "Venc. Oit. 6" },
-        { t1: "Venc. Oit. 7", t2: "Venc. Oit. 8" }
+        { t1: "Venc. Jogo 89", t2: "Venc. Jogo 90" },
+        { t1: "Venc. Jogo 93", t2: "Venc. Jogo 94" },
+        { t1: "Venc. Jogo 91", t2: "Venc. Jogo 92" },
+        { t1: "Venc. Jogo 95", t2: "Venc. Jogo 96" }
     ];
 
     const LABELS_SEMIFINAIS = [
-        { t1: "Venc. Qua. 1", t2: "Venc. Qua. 2" },
-        { t1: "Venc. Qua. 3", t2: "Venc. Qua. 4" }
+        { t1: "Venc. Jogo 97", t2: "Venc. Jogo 98" },
+        { t1: "Venc. Jogo 99", t2: "Venc. Jogo 100" }
     ];
 
     const LABELS_FINAL = { t1: "Venc. Semi 1", t2: "Venc. Semi 2" };
@@ -1370,16 +1370,16 @@
     // Informações ordenadas para mata-mata (já em ordem cronológica)
     const mataInfo = {
         segundaFase: [
-            "28/06 • 16:00 • SoFi Stadium, Inglewood", "29/06 • 14:00 • NRG Stadium, Houston", "29/06 • 17:30 • Gillette Stadium, Foxborough", "29/06 • 22:00 • Estádio BBVA, Guadalupe",
-            "30/06 • 14:00 • AT&T Stadium, Arlington", "30/06 • 18:00 • MetLife Stadium, East Rutherford", "30/06 • 22:00 • Estádio Azteca, Cidade do México", "01/07 • 13:00 • Mercedes-Benz Stadium, Atlanta",
-            "01/07 • 17:00 • Lumen Field, Seattle", "01/07 • 21:00 • Levi's Stadium, Santa Clara", "02/07 • 16:00 • SoFi Stadium, Inglewood", "02/07 • 20:00 • BMO Field, Toronto",
-            "02/07 • 00:00 • BC Place, Vancouver", "03/07 • 15:00 • AT&T Stadium, Arlington", "03/07 • 19:00 • Hard Rock Stadium, Miami Gardens", "03/07 • 22:30 • Arrowhead Stadium, Kansas City"
+            "28/06 • 16:00 • SoFi Stadium, Inglewood", "29/06 • 17:30 • Gillette Stadium, Foxborough", "29/06 • 22:00 • Estádio BBVA, Guadalupe", "29/06 • 14:00 • NRG Stadium, Houston",
+            "30/06 • 18:00 • MetLife Stadium, East Rutherford", "30/06 • 14:00 • AT&T Stadium, Arlington", "30/06 • 22:00 • Estádio Azteca, Cidade do México", "01/07 • 13:00 • Mercedes-Benz Stadium, Atlanta",
+            "01/07 • 21:00 • Levi's Stadium, Santa Clara", "01/07 • 17:00 • Lumen Field, Seattle", "02/07 • 20:00 • BMO Field, Toronto", "02/07 • 16:00 • SoFi Stadium, Inglewood",
+            "02/07 • 00:00 • BC Place, Vancouver", "03/07 • 19:00 • Hard Rock Stadium, Miami Gardens", "03/07 • 22:30 • Arrowhead Stadium, Kansas City", "03/07 • 15:00 • AT&T Stadium, Arlington"
         ],
         oitavas: [
-            "04/07 • 14:00 • Lincoln Financial Field, Filadélfia", "04/07 • 18:00 • MetLife Stadium, East Rutherford",
-            "05/07 • 17:00 • SoFi Stadium, Inglewood", "05/07 • 21:00 • Levi's Stadium, Santa Clara",
+            "04/07 • 18:00 • Lincoln Financial Field, Filadélfia", "04/07 • 14:00 • NRG Stadium, Houston",
+            "05/07 • 17:00 • MetLife Stadium, East Rutherford", "05/07 • 21:00 • Estádio Azteca, Cidade do México",
             "06/07 • 16:00 • AT&T Stadium, Arlington", "06/07 • 21:00 • Lumen Field, Seattle",
-            "07/07 • 13:00 • Hard Rock Stadium, Miami Gardens", "07/07 • 17:00 • Arrowhead Stadium, Kansas City"
+            "07/07 • 13:00 • Mercedes-Benz Stadium, Atlanta", "07/07 • 17:00 • BC Place, Vancouver"
         ],
         quartas: [
             "09/07 • 17:00 • Gillette Stadium, Foxborough", "10/07 • 16:00 • SoFi Stadium, Inglewood",
@@ -1487,23 +1487,24 @@
 
     // Estrutura correta da Segunda Fase (FIFA 2026): 16 slots com tipos específicos
     // Tipos: 1v3 = 1º lugar vs Melhor 3º, 1v2 = 1º lugar vs 2º lugar, 2v2 = 2º vs 2º, 2v3 = 2º vs Melhor 3º
+    // Bracket oficial FIFA 2026 - Jogos 73 a 88 (Round of 32)
     const SLOTS_SEGUNDA_FASE = [
-        { tipo: '1v3', t1_grupo: 'A', t3_grupos: 'CDEFGHI' },
-        { tipo: '2v2', t1_grupo: 'A', t2_grupo: 'B' },
-        { tipo: '1v3', t1_grupo: 'B', t3_grupos: 'ACDEFG' },
-        { tipo: '1v2', t1_grupo: 'F', t2_grupo: 'C' },
-        { tipo: '1v3', t1_grupo: 'C', t3_grupos: 'ABDEFG' },
-        { tipo: '1v2', t1_grupo: 'E', t2_grupo: 'D' },
-        { tipo: '1v3', t1_grupo: 'D', t3_grupos: 'ABCEFG' },
-        { tipo: '1v2', t1_grupo: 'I', t2_grupo: 'E' },
-        { tipo: '1v3', t1_grupo: 'G', t3_grupos: 'ABCDEF' },
-        { tipo: '1v2', t1_grupo: 'K', t2_grupo: 'H' },
-        { tipo: '1v3', t1_grupo: 'H', t3_grupos: 'ABCDEG' },
-        { tipo: '2v2', t1_grupo: 'F', t2_grupo: 'G' },
-        { tipo: '1v3', t1_grupo: 'J', t3_grupos: 'ABCDFH' },
-        { tipo: '1v2', t1_grupo: 'L', t2_grupo: 'I' },
-        { tipo: '2v2', t1_grupo: 'J', t2_grupo: 'K' },
-        { tipo: '2v3', t2_grupo: 'L', t3_grupos: 'EHIJK' }
+        { tipo: '2v2', t1_grupo: 'A', t2_grupo: 'B' },       // Jogo 73: 2ºA vs 2ºB
+        { tipo: '1v3', t1_grupo: 'E', t3_grupos: 'ABCDF' },    // Jogo 74: 1ºE vs 3º(A/B/C/D/F)
+        { tipo: '1v2', t1_grupo: 'F', t2_grupo: 'C' },         // Jogo 75: 1ºF vs 2ºC
+        { tipo: '1v2', t1_grupo: 'C', t2_grupo: 'F' },         // Jogo 76: 1ºC vs 2ºF
+        { tipo: '1v3', t1_grupo: 'I', t3_grupos: 'CDFGH' },    // Jogo 77: 1ºI vs 3º(C/D/F/G/H)
+        { tipo: '2v2', t1_grupo: 'E', t2_grupo: 'I' },         // Jogo 78: 2ºE vs 2ºI
+        { tipo: '1v3', t1_grupo: 'A', t3_grupos: 'CEFHI' },    // Jogo 79: 1ºA vs 3º(C/E/F/H/I)
+        { tipo: '1v3', t1_grupo: 'L', t3_grupos: 'EHIJK' },    // Jogo 80: 1ºL vs 3º(E/H/I/J/K)
+        { tipo: '1v3', t1_grupo: 'D', t3_grupos: 'BEFIJ' },    // Jogo 81: 1ºD vs 3º(B/E/F/I/J)
+        { tipo: '1v3', t1_grupo: 'G', t3_grupos: 'AEHIJ' },    // Jogo 82: 1ºG vs 3º(A/E/H/I/J)
+        { tipo: '2v2', t1_grupo: 'K', t2_grupo: 'L' },         // Jogo 83: 2ºK vs 2ºL
+        { tipo: '1v2', t1_grupo: 'H', t2_grupo: 'J' },         // Jogo 84: 1ºH vs 2ºJ
+        { tipo: '1v3', t1_grupo: 'B', t3_grupos: 'EFGIJ' },    // Jogo 85: 1ºB vs 3º(E/F/G/I/J)
+        { tipo: '1v2', t1_grupo: 'J', t2_grupo: 'H' },         // Jogo 86: 1ºJ vs 2ºH
+        { tipo: '1v3', t1_grupo: 'K', t3_grupos: 'DEIJL' },    // Jogo 87: 1ºK vs 3º(D/E/I/J/L)
+        { tipo: '2v2', t1_grupo: 'D', t2_grupo: 'G' }          // Jogo 88: 2ºD vs 2ºG
     ];
 
     function gerarSegundaFase(classificados) {
@@ -1563,35 +1564,53 @@
         return sf;
     }
 
+    // Mapeamento oficial FIFA 2026 do bracket mata-mata
+    // SF → Oitavas: [índiceSF1, índiceSF2] para cada jogo das oitavas (Jogos 89-96)
+    const BRACKET_SF_TO_OITAVAS = [[1,4],[0,2],[3,5],[6,7],[10,11],[8,9],[13,15],[12,14]];
+    // Oitavas → Quartas: [índiceOit1, índiceOit2] para cada jogo das quartas (Jogos 97-100)
+    const BRACKET_OIT_TO_QUARTAS = [[0,1],[4,5],[2,3],[6,7]];
+    // Quartas → Semis: [índiceQua1, índiceQua2] (Jogos 101-102)
+    const BRACKET_QUA_TO_SEMIS = [[0,1],[2,3]];
+
     function atualizarBracketCompleto() {
         // Segunda Fase: determinar vencedores
         for (let j of mataData.segundaFase) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
         // Função auxiliar: preserva placar apenas se AMBOS os times são não-vazios E idênticos aos anteriores
         function mesmoTime(novo, antigo) { return novo !== "" && novo === antigo; }
-        // Oitavas (8 jogos): SOMENTE vencedores confirmados da Segunda Fase (sem fallback)
+        // Oitavas (8 jogos): bracket oficial FIFA
         let oitavas = [];
-        for (let i=0; i<4; i++) {
-            let v1 = mataData.segundaFase[i*4]?.vencedor || "";
-            let v2 = mataData.segundaFase[i*4+1]?.vencedor || "";
-            let ex = mataData.oitavas[i*2]||{};
+        for (let i=0; i<8; i++) {
+            let [idx1, idx2] = BRACKET_SF_TO_OITAVAS[i];
+            let v1 = mataData.segundaFase[idx1]?.vencedor || "";
+            let v2 = mataData.segundaFase[idx2]?.vencedor || "";
+            let ex = mataData.oitavas[i]||{};
             let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
-            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.oitavas[i*2] || "Oitavas", vencedor:null });
-            v1 = mataData.segundaFase[i*4+2]?.vencedor || "";
-            v2 = mataData.segundaFase[i*4+3]?.vencedor || "";
-            ex = mataData.oitavas[i*2+1]||{};
-            preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
-            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.oitavas[i*2+1] || "Oitavas", vencedor:null });
+            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.oitavas[i] || "Oitavas", vencedor:null });
         }
         for (let j of oitavas) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
         mataData.oitavas = oitavas;
-        // Quartas (4 jogos): SOMENTE vencedores confirmados das Oitavas
+        // Quartas (4 jogos): bracket oficial FIFA
         let quartas = [];
-        for (let i=0; i<4; i++) { let v1 = mataData.oitavas[i*2]?.vencedor || ""; let v2 = mataData.oitavas[i*2+1]?.vencedor || ""; let ex = mataData.quartas[i]||{}; let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2); quartas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.quartas[i] || "Quartas", vencedor:null }); }
+        for (let i=0; i<4; i++) {
+            let [idx1, idx2] = BRACKET_OIT_TO_QUARTAS[i];
+            let v1 = mataData.oitavas[idx1]?.vencedor || "";
+            let v2 = mataData.oitavas[idx2]?.vencedor || "";
+            let ex = mataData.quartas[i]||{};
+            let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
+            quartas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.quartas[i] || "Quartas", vencedor:null });
+        }
         for (let q of quartas) { let g1 = (q.gols1!="" && !isNaN(parseInt(q.gols1)))?parseInt(q.gols1):null; let g2 = (q.gols2!="" && !isNaN(parseInt(q.gols2)))?parseInt(q.gols2):null; q.vencedor = (g1!==null && g2!==null) ? (g1>g2?q.time1:g2>g1?q.time2:null) : null; }
         mataData.quartas = quartas;
-        // Semifinais: SOMENTE vencedores confirmados das Quartas
+        // Semifinais: bracket oficial FIFA
         let semis = [];
-        for (let i=0; i<2; i++) { let v1 = mataData.quartas[i*2]?.vencedor || ""; let v2 = mataData.quartas[i*2+1]?.vencedor || ""; let ex = mataData.semifinais[i]||{}; let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2); semis.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null }); }
+        for (let i=0; i<2; i++) {
+            let [idx1, idx2] = BRACKET_QUA_TO_SEMIS[i];
+            let v1 = mataData.quartas[idx1]?.vencedor || "";
+            let v2 = mataData.quartas[idx2]?.vencedor || "";
+            let ex = mataData.semifinais[i]||{};
+            let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
+            semis.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null });
+        }
         for (let s of semis) { let g1 = (s.gols1!="" && !isNaN(parseInt(s.gols1)))?parseInt(s.gols1):null; let g2 = (s.gols2!="" && !isNaN(parseInt(s.gols2)))?parseInt(s.gols2):null; s.vencedor = (g1!==null && g2!==null) ? (g1>g2?s.time1:g2>g1?s.time2:null) : null; }
         mataData.semifinais = semis;
         // Final: SOMENTE vencedores confirmados das Semifinais
