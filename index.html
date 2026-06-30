@@ -335,7 +335,7 @@
         .mata-penalties { font-size: 0.78rem; color: #f5b642; padding: 4px 8px; background: #0a1f1f; border-radius: 14px; }
         .mata-penalties input { width: 40px !important; padding: 3px !important; }
         /* 🌳 Chaveamento gráfico */
-        .bracket-tree { display: flex; overflow-x: auto; gap: 0; padding: 20px 12px; margin-top: 16px; background: #0a1f1f; border-radius: 28px; align-items: stretch; }
+        .bracket-tree { display: flex; overflow-x: auto; gap: 6px; padding: 20px 12px; margin-top: 16px; background: #0a1f1f; border-radius: 28px; align-items: stretch; }
         .bracket-round { display: flex; flex-direction: column; min-width: 160px; position: relative; }
         .bracket-round-title { text-align: center; font-size: 0.66rem; color: #f5b642; font-weight: bold; padding: 4px 8px; background: #04242b; border-radius: 20px; margin-bottom: 6px; position: sticky; top: 0; z-index: 2; }
         .bracket-game { background: #11393e; border-radius: 10px; padding: 4px 7px; }
@@ -2530,10 +2530,10 @@ const COMBINACAO_TERCEIROS = {
                     let x1 = sfCol.left + sfCol.width;
                     let x2 = oitCol.left;
                     let mx = (x1 + x2) / 2;
-                    svgLines += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + mx + '" y2="' + y1 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="' + mx + '" y1="' + y1 + '" x2="' + mx + '" y2="' + y2 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="' + x1 + '" y1="' + y2 + '" x2="' + mx + '" y2="' + y2 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="' + mx + '" y1="' + y3 + '" x2="' + x2 + '" y2="' + y3 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + mx + '" y2="' + y1 + '" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="' + mx + '" y1="' + y1 + '" x2="' + mx + '" y2="' + y2 + '" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="' + x1 + '" y1="' + y2 + '" x2="' + mx + '" y2="' + y2 + '" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="' + mx + '" y1="' + y3 + '" x2="' + x2 + '" y2="' + y3 + '" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
                 }
             }
             // Oitavas → Quartas
@@ -2547,10 +2547,10 @@ const COMBINACAO_TERCEIROS = {
                 if (ia < oitCol.games.length && ib < oitCol.games.length && iq < quaCol.games.length) {
                     let y1 = oitCol.games[ia].cy, y2 = oitCol.games[ib].cy, y3 = quaCol.games[iq].cy;
                     let x1 = oitCol.left + oitCol.width, x2 = quaCol.left, mx = (x1+x2)/2;
-                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
                 }
             }
             // Quartas → Semis
@@ -2564,10 +2564,10 @@ const COMBINACAO_TERCEIROS = {
                 if (ia < quaCol.games.length && ib < quaCol.games.length && ise < semiCol.games.length) {
                     let y1 = quaCol.games[ia].cy, y2 = quaCol.games[ib].cy, y3 = semiCol.games[ise].cy;
                     let x1 = quaCol.left + quaCol.width, x2 = semiCol.left, mx = (x1+x2)/2;
-                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
                 }
             }
             // Semis → Final
@@ -2576,10 +2576,10 @@ const COMBINACAO_TERCEIROS = {
                 if (semiCol.games.length >= 2 && finalCol.games.length >= 1) {
                     let y1 = semiCol.games[0].cy, y2 = semiCol.games[1].cy, y3 = finalCol.games[0].cy;
                     let x1 = semiCol.left + semiCol.width, x2 = finalCol.left, mx = (x1+x2)/2;
-                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
-                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1" opacity="0.35"/>';
                 }
             }
             // Remover SVG anterior e adicionar novo
@@ -2587,7 +2587,7 @@ const COMBINACAO_TERCEIROS = {
             if (oldSvg) oldSvg.remove();
             let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('class', 'bracket-lines');
-            svg.setAttribute('style', 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;');
+            svg.setAttribute('style', 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:hidden;');
             svg.innerHTML = svgLines;
             tree.appendChild(svg);
         }, 100);
