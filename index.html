@@ -220,21 +220,24 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             gap: 10px;
+            text-align: center;
         }
         .confronto-nome {
             font-weight: bold;
             background: #04242b;
-            padding: 5px 12px;
+            padding: 6px 12px;
             border-radius: 30px;
             font-size: 0.7rem;
+            width: 100%;
+            text-align: center;
         }
         .mata-times {
-            flex: 3;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
+            justify-content: center;
             gap: 8px;
         }
         .mata-time {
@@ -266,6 +269,7 @@
         .mata-placar {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 12px;
         }
         .mata-placar input {
@@ -283,8 +287,8 @@
             background: #0e3a3a;
             padding: 4px 10px;
             border-radius: 20px;
-            margin-left: 8px;
-            white-space: nowrap;
+            width: 100%;
+            text-align: center;
         }
         button {
             background: #e6b12e;
@@ -326,6 +330,25 @@
         @keyframes spin-api { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .btn-api-search.success { background: #2f735a; border-color: #2f735a; }
         .btn-api-search.error { background: #974b2e; border-color: #974b2e; }
+        /* ⚡ Display de pênaltis */
+        .pen-display { font-size: 0.8rem; color: #f5b642; font-weight: bold; width: 100%; text-align: center; }
+        .mata-penalties { font-size: 0.78rem; color: #f5b642; padding: 4px 8px; background: #0a1f1f; border-radius: 14px; }
+        .mata-penalties input { width: 40px !important; padding: 3px !important; }
+        /* 🌳 Chaveamento gráfico */
+        .bracket-tree { display: flex; overflow-x: auto; gap: 0; padding: 20px 12px; margin-top: 16px; background: #0a1f1f; border-radius: 28px; align-items: stretch; }
+        .bracket-round { display: flex; flex-direction: column; min-width: 160px; position: relative; }
+        .bracket-round-title { text-align: center; font-size: 0.66rem; color: #f5b642; font-weight: bold; padding: 4px 8px; background: #04242b; border-radius: 20px; margin-bottom: 6px; position: sticky; top: 0; z-index: 2; }
+        .bracket-game { background: #11393e; border-radius: 10px; padding: 4px 7px; }
+        .bracket-team { font-size: 0.65rem; padding: 1px 3px; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .bracket-team.winner { color: #ffe0a3; font-weight: bold; }
+        .bracket-score { font-size: 0.63rem; color: #f5b642; font-weight: bold; margin-left: auto; flex-shrink: 0; }
+        .bracket-flag { font-size: 0.8rem; flex-shrink: 0; }
+        .bracket-empty { color: #444; font-size: 0.55rem; text-align: center; }
+        @media (max-width: 800px) {
+            .bracket-round { min-width: 120px; }
+            .bracket-team { font-size: 0.55rem; }
+            .bracket-flag { font-size: 0.65rem; }
+        }
         /* ⚙️ Configuração de API */
         .api-config-section { font-size: 0.72rem; }
         .api-config-section label { display: block; margin-bottom: 4px; color: #8aa; font-size: 0.65rem; }
@@ -1191,6 +1214,7 @@
 
     <div id="gruposContainer" style="margin-top:12px;"></div>
     <div id="mataMataContainer"></div>
+    <div id="bracketVisual"></div>
 
     <div class="footer-actions">
         <button class="btn-reset" id="resetAllBtn">🔄 Resetar todos os resultados</button>
@@ -1395,8 +1419,8 @@
     let gruposData = {}; // será preenchido com times e jogos ordenados
     let mataData = {
         segundaFase: [], oitavas: [], quartas: [], semifinais: [],
-        terceiroLugar: { time1: "", time2: "", gols1: "", gols2: "", info: "18/07 • 18:00 • Hard Rock Stadium, Miami Gardens" },
-        final: { time1: "", time2: "", gols1: "", gols2: "", info: "19/07 • 16:00 • MetLife Stadium, East Rutherford" }
+        terceiroLugar: { time1: "", time2: "", gols1: "", gols2: "", pens1: "", pens2: "", info: "18/07 • 18:00 • Hard Rock Stadium, Miami Gardens" },
+        final: { time1: "", time2: "", gols1: "", gols2: "", pens1: "", pens2: "", info: "19/07 • 16:00 • MetLife Stadium, East Rutherford" }
     };
     let expansionState = { grupos: {}, fases: { segundaFase: true, oitavas: true, quartas: true, semifinais: true, terceiro: true, final: true } };
 
@@ -1574,6 +1598,505 @@
         return [...primeiros, ...segundos, ...melhoresTerceiros];
     }
 
+const COMBINACAO_TERCEIROS = {
+    "ABCDEFGH": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "B", 9: "A", 12: "G", 14: "D" },
+    "ABCDEFGI": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCDEFGJ": { 1: "D", 4: "F", 6: "C", 7: "J", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCDEFGK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCDEFGL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDEFHI": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "E", 14: "D" },
+    "ABCDEFHJ": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "D" },
+    "ABCDEFHK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "D" },
+    "ABCDEFHL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "B", 9: "A", 12: "F", 14: "L" },
+    "ABCDEFIJ": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCDEFIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "E", 14: "I" },
+    "ABCDEFIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABCDEFJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCDEFJL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDEFKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABCDEGHI": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCDEGHJ": { 1: "C", 4: "D", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCDEGHK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCDEGHL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDEGIJ": { 1: "C", 4: "D", 6: "E", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCDEGIK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCDEGIL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDEGJK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABCDEGJL": { 1: "C", 4: "D", 6: "E", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDEGKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDEHIJ": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCDEHIK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "I" },
+    "ABCDEHIL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABCDEHJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCDEHJL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDEHKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABCDEIJK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCDEIJL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDEIKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABCDEJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDFGHI": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "D" },
+    "ABCDFGHJ": { 1: "C", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "D" },
+    "ABCDFGHK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "D" },
+    "ABCDFGHL": { 1: "D", 4: "F", 6: "C", 7: "H", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDFGIJ": { 1: "D", 4: "F", 6: "C", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCDFGIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCDFGIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDFGJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABCDFGJL": { 1: "D", 4: "F", 6: "C", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDFGKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDFHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "D" },
+    "ABCDFHIK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "F", 14: "I" },
+    "ABCDFHIL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "A", 12: "F", 14: "L" },
+    "ABCDFHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "D" },
+    "ABCDFHJL": { 1: "D", 4: "F", 6: "C", 7: "H", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDFHKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "F", 14: "L" },
+    "ABCDFIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCDFIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDFIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABCDFJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDGHIJ": { 1: "C", 4: "D", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCDGHIK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCDGHIL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDGHJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABCDGHJL": { 1: "C", 4: "D", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDGHKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDGIJK": { 1: "D", 4: "G", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCDGIJL": { 1: "D", 4: "G", 6: "C", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDGIKL": { 1: "C", 4: "D", 6: "I", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCDGJKL": { 1: "D", 4: "G", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDHIJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCDHIJL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDHIKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABCDHJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCDIJKL": { 1: "C", 4: "D", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEFGHI": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCEFGHJ": { 1: "C", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCEFGHK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABCEFGHL": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCEFGIJ": { 1: "C", 4: "F", 6: "E", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCEFGIK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCEFGIL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCEFGJK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABCEFGJL": { 1: "C", 4: "F", 6: "E", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCEFGKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCEFHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCEFHIK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "I" },
+    "ABCEFHIL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABCEFHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCEFHJL": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEFHKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABCEFIJK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCEFIJL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEFIKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABCEFJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEGHIJ": { 1: "C", 4: "G", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCEGHIK": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCEGHIL": { 1: "C", 4: "H", 6: "E", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCEGHJK": { 1: "C", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABCEGHJL": { 1: "C", 4: "G", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEGHKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCEGIJK": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCEGIJL": { 1: "C", 4: "G", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEGIKL": { 1: "A", 4: "C", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "ABCEGJKL": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEHIJK": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCEHIJL": { 1: "C", 4: "H", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEHIKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABCEHJKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCEIJKL": { 1: "A", 4: "C", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ABCFGHIJ": { 1: "C", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCFGHIK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABCFGHIL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCFGHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABCFGHJL": { 1: "C", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCFGHKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCFGIJK": { 1: "F", 4: "G", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCFGIJL": { 1: "F", 4: "G", 6: "C", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCFGIKL": { 1: "C", 4: "F", 6: "I", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCFGJKL": { 1: "F", 4: "G", 6: "C", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCFHIJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCFHIJL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCFHIKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABCFHJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCFIJKL": { 1: "C", 4: "F", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCGHIJK": { 1: "C", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABCGHIJL": { 1: "C", 4: "G", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCGHIKL": { 1: "C", 4: "H", 6: "I", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABCGHJKL": { 1: "C", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCGIJKL": { 1: "C", 4: "G", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABCHIJKL": { 1: "C", 4: "H", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEFGHI": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABDEFGHJ": { 1: "D", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABDEFGHK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "E" },
+    "ABDEFGHL": { 1: "D", 4: "F", 6: "H", 7: "E", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDEFGIJ": { 1: "D", 4: "F", 6: "E", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABDEFGIK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABDEFGIL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDEFGJK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABDEFGJL": { 1: "D", 4: "F", 6: "E", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDEFGKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDEFHIJ": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABDEFHIK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "I" },
+    "ABDEFHIL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABDEFHJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABDEFHJL": { 1: "D", 4: "F", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEFHKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "E", 14: "L" },
+    "ABDEFIJK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABDEFIJL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEFIKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABDEFJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEGHIJ": { 1: "D", 4: "G", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABDEGHIK": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABDEGHIL": { 1: "D", 4: "H", 6: "E", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDEGHJK": { 1: "D", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABDEGHJL": { 1: "D", 4: "G", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEGHKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDEGIJK": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABDEGIJL": { 1: "D", 4: "G", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEGIKL": { 1: "A", 4: "D", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "ABDEGJKL": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEHIJK": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABDEHIJL": { 1: "D", 4: "H", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEHIKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABDEHJKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDEIJKL": { 1: "A", 4: "D", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ABDFGHIJ": { 1: "D", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABDFGHIK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABDFGHIL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDFGHJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "J" },
+    "ABDFGHJL": { 1: "D", 4: "F", 6: "H", 7: "J", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDFGHKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDFGIJK": { 1: "D", 4: "G", 6: "F", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABDFGIJL": { 1: "D", 4: "G", 6: "F", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDFGIKL": { 1: "D", 4: "F", 6: "I", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDFGJKL": { 1: "D", 4: "G", 6: "F", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDFHIJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABDFHIJL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDFHIKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABDFHJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDFIJKL": { 1: "D", 4: "F", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDGHIJK": { 1: "D", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABDGHIJL": { 1: "D", 4: "G", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDGHIKL": { 1: "D", 4: "H", 6: "I", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABDGHJKL": { 1: "D", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDGIJKL": { 1: "D", 4: "G", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABDHIJKL": { 1: "D", 4: "H", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABEFGHIJ": { 1: "F", 4: "G", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABEFGHIK": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "I" },
+    "ABEFGHIL": { 1: "F", 4: "H", 6: "E", 7: "I", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABEFGHJK": { 1: "F", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "E" },
+    "ABEFGHJL": { 1: "F", 4: "G", 6: "H", 7: "E", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABEFGHKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "G", 14: "L" },
+    "ABEFGIJK": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABEFGIJL": { 1: "F", 4: "G", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABEFGIKL": { 1: "A", 4: "F", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "ABEFGJKL": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABEFHIJK": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABEFHIJL": { 1: "F", 4: "H", 6: "E", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABEFHIKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "I", 14: "L" },
+    "ABEFHJKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABEFIJKL": { 1: "A", 4: "F", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ABEGHIJK": { 1: "A", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "ABEGHIJL": { 1: "A", 4: "G", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "ABEGHIKL": { 1: "A", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "ABEGHJKL": { 1: "A", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "ABEGIJKL": { 1: "A", 4: "G", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ABEHIJKL": { 1: "A", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ABFGHIJK": { 1: "F", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "I" },
+    "ABFGHIJL": { 1: "F", 4: "G", 6: "H", 7: "I", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABFGHIKL": { 1: "A", 4: "F", 6: "H", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "ABFGHJKL": { 1: "F", 4: "G", 6: "H", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABFGIJKL": { 1: "F", 4: "G", 6: "I", 7: "K", 8: "B", 9: "A", 12: "J", 14: "L" },
+    "ABFHIJKL": { 1: "A", 4: "F", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ABGHIJKL": { 1: "A", 4: "G", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "ACDEFGHI": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "E", 9: "A", 12: "G", 14: "D" },
+    "ACDEFGHJ": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "J", 9: "A", 12: "G", 14: "D" },
+    "ACDEFGHK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "D" },
+    "ACDEFGHL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "F", 9: "A", 12: "G", 14: "L" },
+    "ACDEFGIJ": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ACDEFGIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "A", 12: "G", 14: "I" },
+    "ACDEFGIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ACDEFGJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ACDEFGJL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDEFGKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ACDEFHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "E", 9: "A", 12: "J", 14: "D" },
+    "ACDEFHIK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "F", 9: "A", 12: "E", 14: "I" },
+    "ACDEFHIL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "F", 9: "A", 12: "E", 14: "L" },
+    "ACDEFHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "D" },
+    "ACDEFHJL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "F", 9: "A", 12: "J", 14: "L" },
+    "ACDEFHKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "F", 9: "A", 12: "E", 14: "L" },
+    "ACDEFIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "A", 12: "J", 14: "I" },
+    "ACDEFIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ACDEFIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "A", 12: "E", 14: "L" },
+    "ACDEFJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ACDEGHIJ": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ACDEGHIK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "I" },
+    "ACDEGHIL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ACDEGHJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ACDEGHJL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDEGHKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ACDEGIJK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ACDEGIJL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDEGIKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ACDEGJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDEHIJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "I" },
+    "ACDEHIJL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ACDEHIKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "I", 9: "A", 12: "E", 14: "L" },
+    "ACDEHJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ACDEIJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACDFGHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "D" },
+    "ACDFGHIK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "F", 9: "A", 12: "G", 14: "I" },
+    "ACDFGHIL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "F", 9: "A", 12: "G", 14: "L" },
+    "ACDFGHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "D" },
+    "ACDFGHJL": { 1: "D", 4: "F", 6: "C", 7: "H", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDFGHKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "F", 9: "A", 12: "G", 14: "L" },
+    "ACDFGIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ACDFGIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDFGIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ACDFGJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDFHIJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "F", 9: "A", 12: "J", 14: "I" },
+    "ACDFHIJL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "F", 9: "A", 12: "J", 14: "L" },
+    "ACDFHIKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "I", 9: "A", 12: "F", 14: "L" },
+    "ACDFHJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "F", 9: "A", 12: "J", 14: "L" },
+    "ACDFIJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACDGHIJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ACDGHIJL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDGHIKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ACDGHJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDGIJKL": { 1: "C", 4: "D", 6: "I", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACDHIJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACEFGHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ACEFGHIK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "I" },
+    "ACEFGHIL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ACEFGHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ACEFGHJL": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACEFGHKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ACEFGIJK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ACEFGIJL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACEFGIKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ACEFGJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACEFHIJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "I" },
+    "ACEFHIJL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ACEFHIKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "I", 9: "A", 12: "E", 14: "L" },
+    "ACEFHJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ACEFIJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACEGHIJK": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ACEGHIJL": { 1: "C", 4: "H", 6: "E", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACEGHIKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ACEGHJKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACEGIJKL": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACEHIJKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACFGHIJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ACFGHIJL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACFGHIKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ACFGHJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACFGIJKL": { 1: "C", 4: "F", 6: "I", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ACFHIJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ACGHIJKL": { 1: "C", 4: "G", 6: "H", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ADEFGHIJ": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ADEFGHIK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "I" },
+    "ADEFGHIL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ADEFGHJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "E" },
+    "ADEFGHJL": { 1: "D", 4: "F", 6: "H", 7: "E", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADEFGHKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "G", 14: "L" },
+    "ADEFGIJK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ADEFGIJL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADEFGIKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ADEFGJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADEFHIJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "I" },
+    "ADEFHIJL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ADEFHIKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "I", 9: "A", 12: "E", 14: "L" },
+    "ADEFHJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "E", 9: "A", 12: "J", 14: "L" },
+    "ADEFIJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ADEGHIJK": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ADEGHIJL": { 1: "D", 4: "H", 6: "E", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADEGHIKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ADEGHJKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADEGIJKL": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ADEHIJKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ADFGHIJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "ADFGHIJL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADFGHIKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "ADFGHJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADFGIJKL": { 1: "D", 4: "F", 6: "I", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "ADFHIJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "ADGHIJKL": { 1: "D", 4: "G", 6: "H", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "AEFGHIJK": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "I" },
+    "AEFGHIJL": { 1: "F", 4: "H", 6: "E", 7: "I", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "AEFGHIKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "I", 9: "A", 12: "G", 14: "L" },
+    "AEFGHJKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "J", 9: "A", 12: "G", 14: "L" },
+    "AEFGIJKL": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "AEFHIJKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "AEGHIJKL": { 1: "A", 4: "G", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "AFGHIJKL": { 1: "F", 4: "G", 6: "H", 7: "K", 8: "I", 9: "A", 12: "J", 14: "L" },
+    "BCDEFGHI": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "H", 12: "G", 14: "E" },
+    "BCDEFGHJ": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "B", 9: "J", 12: "G", 14: "D" },
+    "BCDEFGHK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "G", 14: "E" },
+    "BCDEFGHL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCDEFGIJ": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BCDEFGIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "E", 12: "G", 14: "I" },
+    "BCDEFGIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "E", 12: "G", 14: "L" },
+    "BCDEFGJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BCDEFGJL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDEFGKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "E", 12: "G", 14: "L" },
+    "BCDEFHIJ": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "H", 12: "J", 14: "E" },
+    "BCDEFHIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "E", 14: "I" },
+    "BCDEFHIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "H", 12: "E", 14: "L" },
+    "BCDEFHJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "J", 14: "E" },
+    "BCDEFHJL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCDEFHKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "E", 14: "L" },
+    "BCDEFIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "E", 12: "J", 14: "I" },
+    "BCDEFIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "E", 12: "J", 14: "L" },
+    "BCDEFIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "I", 12: "E", 14: "L" },
+    "BCDEFJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "E", 12: "J", 14: "L" },
+    "BCDEGHIJ": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BCDEGHIK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "H", 12: "G", 14: "I" },
+    "BCDEGHIL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCDEGHJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BCDEGHJL": { 1: "C", 4: "D", 6: "H", 7: "E", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDEGHKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCDEGIJK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BCDEGIJL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDEGIKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BCDEGJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDEHIJK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BCDEHIJL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCDEHIKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "H", 12: "I", 14: "L" },
+    "BCDEHJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCDEIJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCDFGHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "D" },
+    "BCDFGHIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "G", 14: "I" },
+    "BCDFGHIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCDFGHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "D" },
+    "BCDFGHJL": { 1: "D", 4: "F", 6: "C", 7: "J", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCDFGHKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCDFGIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BCDFGIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDFGIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BCDFGJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDFHIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BCDFHIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCDFHIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "I", 14: "L" },
+    "BCDFHJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCDFIJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCDGHIJK": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BCDGHIJL": { 1: "C", 4: "D", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDGHIKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BCDGHJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDGIJKL": { 1: "C", 4: "D", 6: "I", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCDHIJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCEFGHIJ": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BCEFGHIK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "G", 14: "I" },
+    "BCEFGHIL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCEFGHJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BCEFGHJL": { 1: "C", 4: "F", 6: "H", 7: "E", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCEFGHKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BCEFGIJK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BCEFGIJL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCEFGIKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BCEFGJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCEFHIJK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BCEFHIJL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCEFHIKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "I", 14: "L" },
+    "BCEFHJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCEFIJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCEGHIJK": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BCEGHIJL": { 1: "C", 4: "G", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCEGHIKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BCEGHJKL": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BCEGIJKL": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCEHIJKL": { 1: "C", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCFGHIJK": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BCFGHIJL": { 1: "C", 4: "F", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCFGHIKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BCFGHJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCFGIJKL": { 1: "C", 4: "F", 6: "I", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BCFHIJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BCGHIJKL": { 1: "C", 4: "G", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BDEFGHIJ": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BDEFGHIK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "G", 14: "I" },
+    "BDEFGHIL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BDEFGHJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "E" },
+    "BDEFGHJL": { 1: "D", 4: "F", 6: "H", 7: "E", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BDEFGHKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "G", 14: "L" },
+    "BDEFGIJK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BDEFGIJL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BDEFGIKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BDEFGJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BDEFHIJK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BDEFHIJL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BDEFHIKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "I", 14: "L" },
+    "BDEFHJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BDEFIJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BDEGHIJK": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BDEGHIJL": { 1: "D", 4: "G", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BDEGHIKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BDEGHJKL": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BDEGIJKL": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BDEHIJKL": { 1: "D", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BDFGHIJK": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "I" },
+    "BDFGHIJL": { 1: "D", 4: "F", 6: "H", 7: "I", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BDFGHIKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BDFGHJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BDFGIJKL": { 1: "D", 4: "F", 6: "I", 7: "K", 8: "B", 9: "J", 12: "G", 14: "L" },
+    "BDFHIJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BDGHIJKL": { 1: "D", 4: "G", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BEFGHIJK": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "I" },
+    "BEFGHIJL": { 1: "F", 4: "G", 6: "E", 7: "I", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BEFGHIKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "G", 14: "L" },
+    "BEFGHJKL": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "B", 9: "H", 12: "J", 14: "L" },
+    "BEFGIJKL": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BEFHIJKL": { 1: "F", 4: "H", 6: "E", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "BEGHIJKL": { 1: "B", 4: "G", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "BFGHIJKL": { 1: "F", 4: "G", 6: "H", 7: "K", 8: "B", 9: "I", 12: "J", 14: "L" },
+    "CDEFGHIJ": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "J", 9: "H", 12: "G", 14: "E" },
+    "CDEFGHIK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "H", 12: "G", 14: "I" },
+    "CDEFGHIL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "E", 9: "H", 12: "G", 14: "L" },
+    "CDEFGHJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "J", 9: "H", 12: "G", 14: "E" },
+    "CDEFGHJL": { 1: "D", 4: "F", 6: "C", 7: "E", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CDEFGHKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "H", 12: "G", 14: "L" },
+    "CDEFGIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "J", 12: "G", 14: "I" },
+    "CDEFGIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "E", 9: "J", 12: "G", 14: "L" },
+    "CDEFGIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "I", 12: "G", 14: "L" },
+    "CDEFGJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "J", 12: "G", 14: "L" },
+    "CDEFHIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "H", 12: "J", 14: "I" },
+    "CDEFHIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "E", 9: "H", 12: "J", 14: "L" },
+    "CDEFHIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "H", 12: "E", 14: "L" },
+    "CDEFHJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "H", 12: "J", 14: "L" },
+    "CDEFIJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "E", 9: "I", 12: "J", 14: "L" },
+    "CDEGHIJK": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "J", 9: "H", 12: "G", 14: "I" },
+    "CDEGHIJL": { 1: "C", 4: "D", 6: "E", 7: "I", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CDEGHIKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "I", 9: "H", 12: "G", 14: "L" },
+    "CDEGHJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CDEGIJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "CDEHIJKL": { 1: "C", 4: "D", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "CDFGHIJK": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "J", 9: "H", 12: "G", 14: "I" },
+    "CDFGHIJL": { 1: "D", 4: "F", 6: "C", 7: "I", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CDFGHIKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "H", 12: "G", 14: "L" },
+    "CDFGHJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CDFGIJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "CDFHIJKL": { 1: "D", 4: "F", 6: "C", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "CDGHIJKL": { 1: "C", 4: "D", 6: "H", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "CEFGHIJK": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "J", 9: "H", 12: "G", 14: "I" },
+    "CEFGHIJL": { 1: "C", 4: "F", 6: "E", 7: "I", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CEFGHIKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "I", 9: "H", 12: "G", 14: "L" },
+    "CEFGHJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "CEFGIJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "CEFHIJKL": { 1: "C", 4: "F", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "CEGHIJKL": { 1: "C", 4: "G", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "CFGHIJKL": { 1: "C", 4: "F", 6: "H", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "DEFGHIJK": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "J", 9: "H", 12: "G", 14: "I" },
+    "DEFGHIJL": { 1: "D", 4: "F", 6: "E", 7: "I", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "DEFGHIKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "I", 9: "H", 12: "G", 14: "L" },
+    "DEFGHJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "J", 9: "H", 12: "G", 14: "L" },
+    "DEFGIJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "DEFHIJKL": { 1: "D", 4: "F", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "DEGHIJKL": { 1: "D", 4: "G", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+    "DFGHIJKL": { 1: "D", 4: "F", 6: "H", 7: "K", 8: "I", 9: "J", 12: "G", 14: "L" },
+    "EFGHIJKL": { 1: "F", 4: "G", 6: "E", 7: "K", 8: "I", 9: "H", 12: "J", 14: "L" },
+};
+// Total: 495 combinations
+
     // Estrutura correta da Segunda Fase (FIFA 2026): 16 slots com tipos específicos
     // Tipos: 1v3 = 1º lugar vs Melhor 3º, 1v2 = 1º lugar vs 2º lugar, 2v2 = 2º vs 2º, 2v3 = 2º vs Melhor 3º
     // Bracket oficial FIFA 2026 - Jogos 73 a 88 (Round of 32)
@@ -1600,53 +2123,52 @@
         // Mapear times por posição e grupo
         let primeiros = {};
         let segundos = {};
+        let terceirosPorGrupo = {};
         for (let c of classificados) {
             if (c.posicao === 1) primeiros[c.grupo] = c.time;
             else if (c.posicao === 2) segundos[c.grupo] = c.time;
+            else if (c.posicao === 3) terceirosPorGrupo[c.grupo] = c.time;
         }
-        // Terceiros mantidos em array ordenado (já ordenados por pontos e saldo)
-        let terceirosArr = classificados.filter(c => c.posicao === 3);
-        let terceirosDisponiveis = [...terceirosArr]; // cópia para consumo
-
-        function consumirTerceiro(gruposPermitidos) {
-            // Procura terceiro de grupo permitido, senão pega qualquer disponível
-            for (let g of gruposPermitidos) {
-                let idx = terceirosDisponiveis.findIndex(t => t.grupo === g);
-                if (idx >= 0) {
-                    let t = terceirosDisponiveis[idx];
-                    terceirosDisponiveis.splice(idx, 1);
-                    return t.time;
-                }
-            }
-            // Fallback: pega qualquer terceiro restante
-            if (terceirosDisponiveis.length > 0) {
-                return terceirosDisponiveis.shift().time;
-            }
-            return "Classificado";
+        // Determinar quais 8 grupos tiveram 3º lugar classificando (ordenados alfabeticamente)
+        let gruposTerceiros = Object.keys(terceirosPorGrupo).sort().join('');
+        // Consultar tabela oficial FIFA de combinações
+        let combinacao = COMBINACAO_TERCEIROS[gruposTerceiros];
+        // Função para obter o 3º colocado do grupo especificado pela FIFA
+        function getTerceiro(grupo) {
+            return terceirosPorGrupo[grupo] || "Classificado";
         }
-
+        // Slots com 3º colocados: índices 1,4,6,7,8,9,12,14
         let sf = [];
         for (let i = 0; i < SLOTS_SEGUNDA_FASE.length; i++) {
             let slot = SLOTS_SEGUNDA_FASE[i];
             let time1 = "", time2 = "";
             if (slot.tipo === '1v3') {
                 time1 = primeiros[slot.t1_grupo] || "Classificado";
-                time2 = consumirTerceiro(slot.t3_grupos.split(''));
+                // Usar tabela FIFA de combinações se disponível, senão fallback
+                if (combinacao && combinacao[i]) {
+                    time2 = getTerceiro(combinacao[i]);
+                } else {
+                    // Fallback: algoritmo guloso com grupos permitidos
+                    let terceirosArr = classificados.filter(c => c.posicao === 3);
+                    let grp = slot.t3_grupos.split('');
+                    let found = terceirosArr.find(t => grp.includes(t.grupo));
+                    time2 = found ? found.time : (terceirosArr[0] ? terceirosArr[0].time : "Classificado");
+                }
             } else if (slot.tipo === '1v2') {
                 time1 = primeiros[slot.t1_grupo] || "Classificado";
                 time2 = segundos[slot.t2_grupo] || "Classificado";
             } else if (slot.tipo === '2v2') {
                 time1 = segundos[slot.t1_grupo] || "Classificado";
                 time2 = segundos[slot.t2_grupo] || "Classificado";
-            } else if (slot.tipo === '2v3') {
-                time1 = segundos[slot.t2_grupo] || "Classificado";
-                time2 = consumirTerceiro(slot.t3_grupos.split(''));
             }
             let antigo = mataData.segundaFase[i] || {};
+            let mesmoJogo = antigo.time1 === time1 && antigo.time2 === time2 && time1 !== "" && time2 !== "";
             sf.push({
                 id: i, time1, time2,
-                gols1: (antigo.time1 === time1 && antigo.time2 === time2 && time1 !== "" && time2 !== "") ? (antigo.gols1 || "") : "",
-                gols2: (antigo.time1 === time1 && antigo.time2 === time2 && time1 !== "" && time2 !== "") ? (antigo.gols2 || "") : "",
+                gols1: mesmoJogo ? (antigo.gols1 ?? "") : "",
+                gols2: mesmoJogo ? (antigo.gols2 ?? "") : "",
+                pens1: mesmoJogo ? (antigo.pens1 ?? "") : "",
+                pens2: mesmoJogo ? (antigo.pens2 ?? "") : "",
                 info: mataInfo.segundaFase[i] || "A definir"
             });
         }
@@ -1661,9 +2183,24 @@
     // Quartas → Semis: [índiceQua1, índiceQua2] (Jogos 101-102)
     const BRACKET_QUA_TO_SEMIS = [[0,1],[2,3]];
 
+    // Determinador de vencedor (considera pênaltis em caso de empate)
+    function determinarVencedor(jogo) {
+        let g1 = (jogo.gols1!=="" && !isNaN(parseInt(jogo.gols1)))?parseInt(jogo.gols1):null;
+        let g2 = (jogo.gols2!=="" && !isNaN(parseInt(jogo.gols2)))?parseInt(jogo.gols2):null;
+        if (g1===null || g2===null) return null;
+        if (g1>g2) return jogo.time1;
+        if (g2>g1) return jogo.time2;
+        // Empate: decidir nos pênaltis
+        let p1 = (jogo.pens1!=="" && !isNaN(parseInt(jogo.pens1)))?parseInt(jogo.pens1):null;
+        let p2 = (jogo.pens2!=="" && !isNaN(parseInt(jogo.pens2)))?parseInt(jogo.pens2):null;
+        if (p1!==null && p2!==null) {
+            return p1>p2 ? jogo.time1 : (p2>p1 ? jogo.time2 : null);
+        }
+        return null; // empate sem pênaltis = sem vencedor
+    }
     function atualizarBracketCompleto() {
         // Segunda Fase: determinar vencedores
-        for (let j of mataData.segundaFase) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
+        for (let j of mataData.segundaFase) { j.vencedor = determinarVencedor(j); }
         // Função auxiliar: preserva placar apenas se AMBOS os times são não-vazios E idênticos aos anteriores
         function mesmoTime(novo, antigo) { return novo !== "" && novo === antigo; }
         // Oitavas (8 jogos): bracket oficial FIFA
@@ -1674,9 +2211,9 @@
             let v2 = mataData.segundaFase[idx2]?.vencedor || "";
             let ex = mataData.oitavas[i]||{};
             let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
-            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.oitavas[i] || "Oitavas", vencedor:null });
+            oitavas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1 ?? "") : "", gols2: preservar ? (ex.gols2 ?? "") : "", pens1: preservar ? (ex.pens1 ?? "") : "", pens2: preservar ? (ex.pens2 ?? "") : "", info: mataInfo.oitavas[i] || "Oitavas", vencedor:null });
         }
-        for (let j of oitavas) { let g1 = (j.gols1!="" && !isNaN(parseInt(j.gols1)))?parseInt(j.gols1):null; let g2 = (j.gols2!="" && !isNaN(parseInt(j.gols2)))?parseInt(j.gols2):null; j.vencedor = (g1!==null && g2!==null) ? (g1>g2?j.time1:g2>g1?j.time2:null) : null; }
+        for (let j of oitavas) { j.vencedor = determinarVencedor(j); }
         mataData.oitavas = oitavas;
         // Quartas (4 jogos): bracket oficial FIFA
         let quartas = [];
@@ -1686,9 +2223,9 @@
             let v2 = mataData.oitavas[idx2]?.vencedor || "";
             let ex = mataData.quartas[i]||{};
             let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
-            quartas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.quartas[i] || "Quartas", vencedor:null });
+            quartas.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1 ?? "") : "", gols2: preservar ? (ex.gols2 ?? "") : "", pens1: preservar ? (ex.pens1 ?? "") : "", pens2: preservar ? (ex.pens2 ?? "") : "", info: mataInfo.quartas[i] || "Quartas", vencedor:null });
         }
-        for (let q of quartas) { let g1 = (q.gols1!="" && !isNaN(parseInt(q.gols1)))?parseInt(q.gols1):null; let g2 = (q.gols2!="" && !isNaN(parseInt(q.gols2)))?parseInt(q.gols2):null; q.vencedor = (g1!==null && g2!==null) ? (g1>g2?q.time1:g2>g1?q.time2:null) : null; }
+        for (let q of quartas) { q.vencedor = determinarVencedor(q); }
         mataData.quartas = quartas;
         // Semifinais: bracket oficial FIFA
         let semis = [];
@@ -1698,30 +2235,33 @@
             let v2 = mataData.quartas[idx2]?.vencedor || "";
             let ex = mataData.semifinais[i]||{};
             let preservar = mesmoTime(v1, ex.time1) && mesmoTime(v2, ex.time2);
-            semis.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1||"") : "", gols2: preservar ? (ex.gols2||"") : "", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null });
+            semis.push({ time1: v1, time2: v2, gols1: preservar ? (ex.gols1 ?? "") : "", gols2: preservar ? (ex.gols2 ?? "") : "", pens1: preservar ? (ex.pens1 ?? "") : "", pens2: preservar ? (ex.pens2 ?? "") : "", info: mataInfo.semifinais[i] || "Semifinal", vencedor:null });
         }
-        for (let s of semis) { let g1 = (s.gols1!="" && !isNaN(parseInt(s.gols1)))?parseInt(s.gols1):null; let g2 = (s.gols2!="" && !isNaN(parseInt(s.gols2)))?parseInt(s.gols2):null; s.vencedor = (g1!==null && g2!==null) ? (g1>g2?s.time1:g2>g1?s.time2:null) : null; }
+        for (let s of semis) { s.vencedor = determinarVencedor(s); }
         mataData.semifinais = semis;
         // Final: SOMENTE vencedores confirmados das Semifinais
         let finalEx = mataData.final;
         let finalT1 = semis[0]?.vencedor || "";
         let finalT2 = semis[1]?.vencedor || "";
         let preservarF = mesmoTime(finalT1, finalEx?.time1) && mesmoTime(finalT2, finalEx?.time2);
-        mataData.final = { time1: finalT1, time2: finalT2, gols1: preservarF ? (finalEx?.gols1||"") : "", gols2: preservarF ? (finalEx?.gols2||"") : "", info: mataInfo.final, vencedor: null };
-        let f = mataData.final; let gf1 = (f.gols1!="" && !isNaN(parseInt(f.gols1)))?parseInt(f.gols1):null; let gf2 = (f.gols2!="" && !isNaN(parseInt(f.gols2)))?parseInt(f.gols2):null; f.vencedor = (gf1!==null && gf2!==null) ? (gf1>gf2?f.time1:gf2>gf1?f.time2:null) : null;
+        mataData.final = { time1: finalT1, time2: finalT2, gols1: preservarF ? (finalEx?.gols1 ?? "") : "", gols2: preservarF ? (finalEx?.gols2 ?? "") : "", pens1: preservarF ? (finalEx?.pens1 ?? "") : "", pens2: preservarF ? (finalEx?.pens2 ?? "") : "", info: mataInfo.final, vencedor: null };
+        mataData.final.vencedor = determinarVencedor(mataData.final);
         // Terceiro lugar: SOMENTE perdedores confirmados das Semifinais (com placar)
         let tercEx = mataData.terceiroLugar;
         let perdedorSemi0 = (semis[0]?.gols1!=="" && semis[0]?.vencedor) ? (semis[0].vencedor===semis[0].time1 ? semis[0].time2 : semis[0].time1) : "";
         let perdedorSemi1 = (semis[1]?.gols1!=="" && semis[1]?.vencedor) ? (semis[1].vencedor===semis[1].time1 ? semis[1].time2 : semis[1].time1) : "";
         let preservarT = mesmoTime(perdedorSemi0, tercEx?.time1) && mesmoTime(perdedorSemi1, tercEx?.time2);
-        mataData.terceiroLugar = { time1: perdedorSemi0, time2: perdedorSemi1, gols1: preservarT ? (tercEx?.gols1||"") : "", gols2: preservarT ? (tercEx?.gols2||"") : "", info: mataInfo.terceiro, vencedor: null };
+        mataData.terceiroLugar = { time1: perdedorSemi0, time2: perdedorSemi1, gols1: preservarT ? (tercEx?.gols1 ?? "") : "", gols2: preservarT ? (tercEx?.gols2 ?? "") : "", pens1: preservarT ? (tercEx?.pens1 ?? "") : "", pens2: preservarT ? (tercEx?.pens2 ?? "") : "", info: mataInfo.terceiro, vencedor: null };
     }
 
     function regenerarOitavasPorGrupos() {
         if (!temJogosRealizados()) {
-            mataData.segundaFase = [];
-            for (let i = 0; i < 16; i++) {
-                mataData.segundaFase.push({ id: i, time1: "", time2: "", gols1: "", gols2: "", info: mataInfo.segundaFase[i] || "A definir" });
+            // Se já existem jogos na segunda fase (carregados do storage), preservar
+            if (!mataData.segundaFase || mataData.segundaFase.length === 0) {
+                mataData.segundaFase = [];
+                for (let i = 0; i < 16; i++) {
+                    mataData.segundaFase.push({ id: i, time1: "", time2: "", gols1: "", gols2: "", pens1: "", pens2: "", info: mataInfo.segundaFase[i] || "A definir" });
+                }
             }
             atualizarBracketCompleto();
             return;
@@ -1787,44 +2327,282 @@
         } else {
             time2Html = "❓";
         }
+        let temPenaltis = (jogo.gols1!=="" && jogo.gols2!=="" && jogo.gols1===jogo.gols2);
+        let penDisplay = temPenaltis ? `<div class="pen-display">⚡ PÊNALTIS: (${jogo.pens1 ?? '?'})—(${jogo.pens2 ?? '?'})</div>` : '';
+        let pens1v = jogo.pens1 ?? ''; let pens2v = jogo.pens2 ?? '';
+        let penInputs = `<div class="mata-penalties" style="display:${temPenaltis?'flex':'none'};align-items:center;gap:6px;margin-top:4px;font-size:0.8rem;color:#f5b642;">⚡ PÊNALTIS: <input type="number" placeholder="0" value="${pens1v}" class="mata-pen1" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-lado="1" style="width:45px;padding:4px;text-align:center;background:#0c1f1f;color:#f5d98f;border:1px solid #e6b12e;border-radius:10px;font-size:0.85rem;"><span>—</span><input type="number" placeholder="0" value="${pens2v}" class="mata-pen2" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-lado="2" style="width:45px;padding:4px;text-align:center;background:#0c1f1f;color:#f5d98f;border:1px solid #e6b12e;border-radius:10px;font-size:0.85rem;"></div>`;
+        let btnBuscar = (jogo.time1 && jogo.time2) ? `<button class="btn-api-search btn-api-mata" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-time1="${escapeHtml(jogo.time1)}" data-time2="${escapeHtml(jogo.time2)}" title="Buscar placar online (ESPN)">🔄</button>` : '';
+        let g1v = jogo.gols1 ?? ''; let g2v = jogo.gols2 ?? '';
         return `<div class="confronto-mata"><div class="confronto-nome">${faseId.toUpperCase()} ${idx!==null?idx+1:''}</div>
-                <div class="mata-times"><span class="mata-time">${time1Html}</span><span class="vs">🆚</span><span class="mata-time">${time2Html}</span>
-                <span class="info-mata">📅 ${infoExtra}</span></div>
-                <div class="mata-placar"><input type="number" placeholder="0" value="${jogo.gols1||''}" class="mata-gol1" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-lado="1"><span>—</span>
-                <input type="number" placeholder="0" value="${jogo.gols2||''}" class="mata-gol2" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-lado="2"></div></div>`;
+                <div class="mata-times"><span class="mata-time">${time1Html}</span><span class="vs">🆚</span><span class="mata-time">${time2Html}</span></div>
+                <div class="info-mata">📅 ${infoExtra}</div>
+                <div class="mata-placar"><input type="number" placeholder="0" value="${g1v}" class="mata-gol1" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-lado="1"><span>—</span>
+                <input type="number" placeholder="0" value="${g2v}" class="mata-gol2" data-fase="${faseId}" data-idx="${idx!==null?idx:'unico'}" data-lado="2">${btnBuscar}</div>
+                ${penDisplay}
+                ${penInputs}</div>`;
     }
 
     function renderMataMata() {
         let container = document.getElementById("mataMataContainer");
         if (!container) return;
+        // Função para extrair data/hora ordenável do info
+        function dataOrd(info) {
+            let m = (info||'').match(/(\d{2})\/(\d{2})\s*•\s*(\d{1,2}):(\d{2})/);
+            if (!m) return '999999'; // jogos sem data vão pro final
+            return m[2]+m[1]+m[3].padStart(2,'0')+m[4]; // MMDDhhmm
+        }
         let fases = [
-            { id:"segundaFase", titulo:"🏟️ SEGUNDA FASE (16 AVOS)", dados:mataData.segundaFase, tipo:"list" },
-            { id:"oitavas", titulo:"⚔️ OITAVAS DE FINAL", dados:mataData.oitavas, tipo:"list" },
-            { id:"quartas", titulo:"🏆 QUARTAS DE FINAL", dados:mataData.quartas, tipo:"list" },
-            { id:"semifinais", titulo:"🥇 SEMIFINAIS", dados:mataData.semifinais, tipo:"list" },
-            { id:"terceiro", titulo:"🥉 DISPUTA 3º LUGAR", dados:mataData.terceiroLugar, tipo:"single" },
-            { id:"final", titulo:"🏆 FINAL", dados:mataData.final, tipo:"single" }
+            { id:"segundaFase", titulo:"🏟️ SEGUNDA FASE (16 AVOS)", dados:mataData.segundaFase, info:mataInfo.segundaFase, tipo:"list" },
+            { id:"oitavas", titulo:"⚔️ OITAVAS DE FINAL", dados:mataData.oitavas, info:mataInfo.oitavas, tipo:"list" },
+            { id:"quartas", titulo:"🏆 QUARTAS DE FINAL", dados:mataData.quartas, info:mataInfo.quartas, tipo:"list" },
+            { id:"semifinais", titulo:"🥇 SEMIFINAIS", dados:mataData.semifinais, info:mataInfo.semifinais, tipo:"list" },
+            { id:"terceiro", titulo:"🥉 DISPUTA 3º LUGAR", dados:mataData.terceiroLugar, info:[mataInfo.terceiro], tipo:"single" },
+            { id:"final", titulo:"🏆 FINAL", dados:mataData.final, info:[mataInfo.final], tipo:"single" }
         ];
         let html = "";
         for (let fase of fases) {
             let isExp = expansionState.fases[fase.id] !== false;
             html += `<div class="fase-card"><div class="fase-header" data-toggle-fase="${fase.id}"><span class="fase-title">${fase.titulo}</span><span class="fase-toggle">${isExp ? '▼' : '▶'}</span></div>
                      <div class="fase-content ${isExp ? '' : 'collapsed'}" data-fase-content="${fase.id}">`;
-            if (fase.tipo === "list") fase.dados.forEach((j,idx)=>{ html += gerarLinhaMata(j, idx, fase.id); });
-            else html += gerarLinhaMata(fase.dados, null, fase.id);
+            if (fase.tipo === "list") {
+                // Ordenar jogos por data/hora crescente
+                let jogosOrdenados = fase.dados.map((j, idx) => ({jogo: j, idx: idx, ord: dataOrd(fase.info[idx] || j.info)}));
+                jogosOrdenados.sort((a,b) => a.ord.localeCompare(b.ord));
+                jogosOrdenados.forEach(item => { html += gerarLinhaMata(item.jogo, item.idx, fase.id); });
+            } else {
+                html += gerarLinhaMata(fase.dados, null, fase.id);
+            }
             html += `</div></div>`;
         }
         container.innerHTML = html;
         attachFaseToggleEvents();
         attachGlobalEvents();
+        renderBracketVisual();
+    }
+
+    function renderBracketVisual() {
+        let container = document.getElementById("bracketVisual");
+        if (!container) return;
+        function flag(t) { return getFlag(t); }
+        function esc(t) { return escapeHtml(t); }
+        function renderJogo(j) {
+            let t1 = j.time1 || '', t2 = j.time2 || '';
+            let s1 = j.gols1 ?? '', s2 = j.gols2 ?? '';
+            let penStr = '';
+            if (s1 !== '' && s2 !== '' && s1 === s2 && (j.pens1 ?? '') !== '' && (j.pens2 ?? '') !== '') penStr = ' (' + j.pens1 + '—' + j.pens2 + ')';
+            let w1 = '', w2 = '';
+            if (s1 !== '' && s2 !== '') {
+                let g1 = parseInt(s1), g2 = parseInt(s2);
+                if (g1 > g2) w1 = 'winner'; else if (g2 > g1) w2 = 'winner';
+                else if ((j.pens1 ?? '') !== '' && (j.pens2 ?? '') !== '') { let p1 = parseInt(j.pens1), p2 = parseInt(j.pens2); if (p1 > p2) w1 = 'winner'; else if (p2 > p1) w2 = 'winner'; }
+            }
+            let h = '<div class="bracket-game">';
+            if (t1) h += '<div class="bracket-team ' + w1 + '"><span class="bracket-flag">' + flag(t1) + '</span> ' + esc(t1) + '<span class="bracket-score">' + s1 + penStr + '</span></div>';
+            else h += '<div class="bracket-empty">—</div>';
+            if (t2) h += '<div class="bracket-team ' + w2 + '"><span class="bracket-flag">' + flag(t2) + '</span> ' + esc(t2) + '<span class="bracket-score">' + s2 + penStr + '</span></div>';
+            else h += '<div class="bracket-empty">—</div>';
+            h += '</div>';
+            return h;
+        }
+        // Percurso em-ordem da árvore do bracket FIFA para posicionamento visual
+        // Estrutura: Semi → Qua → Oit → SF (pares de SF alimentam cada Oit)
+        const BRACKET_TREE = {
+            semi: [
+                { qua: [ { oit: [[1,4],[0,2]] }, { oit: [[10,11],[8,9]] } ] },
+                { qua: [ { oit: [[3,5],[6,7]] }, { oit: [[13,15],[12,14]] } ] }
+            ]
+        };
+        let sfDisplayPos = {};
+        let oitDispPos = {};
+        let quaDispPos = {};
+        let semiDispPos = {};
+        let pos = 0;
+        for (let si = 0; si < 2; si++) {
+            let semiNode = BRACKET_TREE.semi[si];
+            let semiSum = 0, semiCount = 0;
+            for (let qi = 0; qi < 2; qi++) {
+                let quaNode = semiNode.qua[qi];
+                let quaSum = 0, quaCount = 0;
+                for (let oi = 0; oi < 2; oi++) {
+                    let [a, b] = quaNode.oit[oi];
+                    sfDisplayPos['sf'+a] = pos++;
+                    sfDisplayPos['sf'+b] = pos++;
+                    let oitPos = (sfDisplayPos['sf'+a] + sfDisplayPos['sf'+b]) / 2;
+                    let oitIdx = BRACKET_SF_TO_OITAVAS.findIndex(x => x[0]===a && x[1]===b);
+                    if (oitIdx >= 0) oitDispPos['oit'+oitIdx] = oitPos;
+                    quaSum += oitPos; quaCount++;
+                }
+                let qPos = quaSum / quaCount;
+                let quaIdx = BRACKET_OIT_TO_QUARTAS.findIndex(x => {
+                    let oitA = BRACKET_SF_TO_OITAVAS[x[0]], oitB = BRACKET_SF_TO_OITAVAS[x[1]];
+                    return (oitA[0]===quaNode.oit[0][0] && oitA[1]===quaNode.oit[0][1] && oitB[0]===quaNode.oit[1][0] && oitB[1]===quaNode.oit[1][1]);
+                });
+                if (quaIdx >= 0) quaDispPos['qua'+quaIdx] = qPos;
+                semiSum += qPos; semiCount++;
+            }
+            semiDispPos['semi'+si] = semiSum / semiCount;
+        }
+        let finalDispPos = (semiDispPos['semi0'] + semiDispPos['semi1']) / 2;
+        let tercDispPos = finalDispPos + 2;
+        // Ordenar jogos por posição visual
+        function ordenar(arr, posMap, prefix) {
+            return arr.map((j, i) => ({j, idx: i, pos: posMap[prefix + i]})).sort((a, b) => a.pos - b.pos);
+        }
+        let sfOrd = ordenar(mataData.segundaFase, sfDisplayPos, 'sf');
+        let oitOrd = ordenar(mataData.oitavas, oitDispPos, 'oit');
+        let quaOrd = ordenar(mataData.quartas, quaDispPos, 'qua');
+        let semiOrd = ordenar(mataData.semifinais, semiDispPos, 'semi');
+        // Usar grid: 16 posições (SF), altura baseada nisso
+        let rowH = 52;
+        let html = '<div class="bracket-tree" style="position:relative;height:' + (17 * rowH + 30) + 'px;">';
+        function renderColuna(titulo, dadosOrd) {
+            let h = '<div class="bracket-round"><div class="bracket-round-title">' + titulo + '</div>';
+            h += '<div style="position:relative;flex:1;">';
+            for (let item of dadosOrd) {
+                let topPx = item.pos * rowH;
+                h += '<div style="position:absolute;top:' + topPx + 'px;left:0;right:0;">' + renderJogo(item.j) + '</div>';
+            }
+            h += '</div></div>';
+            return h;
+        }
+        html += renderColuna('16 AVOS', sfOrd);
+        html += renderColuna('OITAVAS', oitOrd);
+        html += renderColuna('QUARTAS', quaOrd);
+        html += renderColuna('SEMIFINAIS', semiOrd);
+        // Final
+        html += '<div class="bracket-round"><div class="bracket-round-title">FINAL</div><div style="position:relative;flex:1;"><div style="position:absolute;top:' + (finalDispPos * rowH) + 'px;left:0;right:0;">' + renderJogo(mataData.final) + '</div></div></div>';
+        // 3º lugar
+        let tercJogo = mataData.terceiroLugar;
+        if (tercJogo.time1 || tercJogo.time2) {
+            html += '<div class="bracket-round"><div class="bracket-round-title">🥉 3º LUGAR</div><div style="position:relative;flex:1;"><div style="position:absolute;top:' + (tercDispPos * rowH) + 'px;left:0;right:0;">' + renderJogo(tercJogo) + '</div></div></div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+        // Desenhar linhas conectoras via SVG
+        setTimeout(function() {
+            let tree = container.querySelector('.bracket-tree');
+            if (!tree) return;
+            let cols = tree.querySelectorAll('.bracket-round');
+            if (cols.length < 2) return;
+            let rects = [];
+            for (let c of cols) {
+                let games = c.querySelectorAll('.bracket-game');
+                let cr = c.getBoundingClientRect();
+                let gr = [];
+                for (let g of games) {
+                    let r = g.getBoundingClientRect();
+                    gr.push({ top: r.top - cr.top + g.offsetHeight/2, left: 0, right: r.width });
+                }
+                rects.push({ el: c, left: 0, width: cr.width, games: gr });
+            }
+            // Recalcular posições relativas
+            let treeRect = tree.getBoundingClientRect();
+            let colData = [];
+            for (let c of cols) {
+                let cr = c.getBoundingClientRect();
+                let games = c.querySelectorAll('.bracket-game');
+                let gr = [];
+                for (let g of games) {
+                    let r = g.getBoundingClientRect();
+                    gr.push({ cy: r.top - treeRect.top + r.height/2, top: r.top - treeRect.top, bottom: r.top - treeRect.top + r.height });
+                }
+                colData.push({ left: cr.left - treeRect.left, width: cr.width, games: gr });
+            }
+            // Conectar: SF→Oit, Oit→Qua, Qua→Semi, Semi→Final
+            let conns = [
+                { from: 0, to: 1, bracket: BRACKET_SF_TO_OITAVAS, fromIdx: function(j) { for (let x of sfOrd) if (x.j === j) return this.fromGames.indexOf(x); return -1; }, fromGames: sfOrd },
+                { from: 1, to: 2, bracket: BRACKET_OIT_TO_QUARTAS, fromIdx: function(j) { for (let x of oitOrd) if (x.j === j) return this.fromGames.indexOf(x); return -1; }, fromGames: oitOrd },
+                { from: 2, to: 3, bracket: BRACKET_QUA_TO_SEMIS, fromIdx: function(j) { for (let x of quaOrd) if (x.j === j) return this.fromGames.indexOf(x); return -1; }, fromGames: quaOrd },
+                { from: 3, to: 4, bracket: BRACKET_QUA_TO_SEMIS, special: 'semiToFinal' }
+            ];
+            let svgLines = '';
+            // SF → Oitavas
+            for (let i = 0; i < 8; i++) {
+                let [a, b] = BRACKET_SF_TO_OITAVAS[i];
+                let ga = sfOrd.find(x => x.idx === a);
+                let gb = sfOrd.find(x => x.idx === b);
+                let oit = oitOrd.find(x => x.idx === i);
+                if (!ga || !gb || !oit) continue;
+                let ia = sfOrd.indexOf(ga), ib = sfOrd.indexOf(gb), io = oitOrd.indexOf(oit);
+                let sfCol = colData[0], oitCol = colData[1];
+                if (ia < sfCol.games.length && ib < sfCol.games.length && io < oitCol.games.length) {
+                    let y1 = sfCol.games[ia].cy, y2 = sfCol.games[ib].cy, y3 = oitCol.games[io].cy;
+                    let x1 = sfCol.left + sfCol.width;
+                    let x2 = oitCol.left;
+                    let mx = (x1 + x2) / 2;
+                    svgLines += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + mx + '" y2="' + y1 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="' + mx + '" y1="' + y1 + '" x2="' + mx + '" y2="' + y2 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="' + x1 + '" y1="' + y2 + '" x2="' + mx + '" y2="' + y2 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="' + mx + '" y1="' + y3 + '" x2="' + x2 + '" y2="' + y3 + '" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                }
+            }
+            // Oitavas → Quartas
+            for (let i = 0; i < 4; i++) {
+                let [a, b] = BRACKET_OIT_TO_QUARTAS[i];
+                let ga = oitOrd.find(x => x.idx === a), gb = oitOrd.find(x => x.idx === b);
+                let qua = quaOrd.find(x => x.idx === i);
+                if (!ga || !gb || !qua) continue;
+                let ia = oitOrd.indexOf(ga), ib = oitOrd.indexOf(gb), iq = quaOrd.indexOf(qua);
+                let oitCol = colData[1], quaCol = colData[2];
+                if (ia < oitCol.games.length && ib < oitCol.games.length && iq < quaCol.games.length) {
+                    let y1 = oitCol.games[ia].cy, y2 = oitCol.games[ib].cy, y3 = quaCol.games[iq].cy;
+                    let x1 = oitCol.left + oitCol.width, x2 = quaCol.left, mx = (x1+x2)/2;
+                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                }
+            }
+            // Quartas → Semis
+            for (let i = 0; i < 2; i++) {
+                let [a, b] = BRACKET_QUA_TO_SEMIS[i];
+                let ga = quaOrd.find(x => x.idx === a), gb = quaOrd.find(x => x.idx === b);
+                let semi = semiOrd.find(x => x.idx === i);
+                if (!ga || !gb || !semi) continue;
+                let ia = quaOrd.indexOf(ga), ib = quaOrd.indexOf(gb), ise = semiOrd.indexOf(semi);
+                let quaCol = colData[2], semiCol = colData[3];
+                if (ia < quaCol.games.length && ib < quaCol.games.length && ise < semiCol.games.length) {
+                    let y1 = quaCol.games[ia].cy, y2 = quaCol.games[ib].cy, y3 = semiCol.games[ise].cy;
+                    let x1 = quaCol.left + quaCol.width, x2 = semiCol.left, mx = (x1+x2)/2;
+                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                }
+            }
+            // Semis → Final
+            if (semiOrd.length >= 2 && colData.length >= 5) {
+                let semiCol = colData[3], finalCol = colData[4];
+                if (semiCol.games.length >= 2 && finalCol.games.length >= 1) {
+                    let y1 = semiCol.games[0].cy, y2 = semiCol.games[1].cy, y3 = finalCol.games[0].cy;
+                    let x1 = semiCol.left + semiCol.width, x2 = finalCol.left, mx = (x1+x2)/2;
+                    svgLines += '<line x1="'+x1+'" y1="'+y1+'" x2="'+mx+'" y2="'+y1+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y1+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+x1+'" y1="'+y2+'" x2="'+mx+'" y2="'+y2+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                    svgLines += '<line x1="'+mx+'" y1="'+y3+'" x2="'+x2+'" y2="'+y3+'" stroke="#e6b12e" stroke-width="1.5" opacity="0.5"/>';
+                }
+            }
+            // Remover SVG anterior e adicionar novo
+            let oldSvg = tree.querySelector('svg.bracket-lines');
+            if (oldSvg) oldSvg.remove();
+            let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'bracket-lines');
+            svg.setAttribute('style', 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;');
+            svg.innerHTML = svgLines;
+            tree.appendChild(svg);
+        }, 100);
     }
 
     function attachGlobalEvents() {
         document.querySelectorAll('.gol-casa, .gol-fora').forEach(inp => { inp.removeEventListener('change', handleGrupoChange); inp.addEventListener('change', handleGrupoChange); });
         document.querySelectorAll('.mata-gol1, .mata-gol2').forEach(inp => { inp.removeEventListener('change', handleMataPlacar); inp.addEventListener('change', handleMataPlacar); });
+        document.querySelectorAll('.mata-pen1, .mata-pen2').forEach(inp => { inp.removeEventListener('change', handleMataPen); inp.addEventListener('change', handleMataPen); });
+        document.querySelectorAll('.mata-gol1, .mata-gol2').forEach(inp => { inp.removeEventListener('input', handleMataInput); inp.addEventListener('input', handleMataInput); });
     }
     function handleGrupoChange(e) { let inp=e.target; let grupo=inp.dataset.grupo, jogoIdx=parseInt(inp.dataset.jogo), lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let jogo=gruposData[grupo]?.jogos[jogoIdx]; if(jogo){ if(lado==="casa") jogo.golsCasa=valor; else jogo.golsFora=valor; salvarStorage(); regenerarOitavasPorGrupos(); renderCompleto(); } }
-    function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ if(lado==="1") mataData.segundaFase[idx].gols1=valor; else mataData.segundaFase[idx].gols2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].gols1=valor; else mataData.oitavas[idx].gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].gols1=valor; else mataData.quartas[idx].gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].gols1=valor; else mataData.semifinais[idx].gols2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.gols1=valor; else mataData.final.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.gols1=valor; else mataData.terceiroLugar.gols2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); } }
+    function handleMataPlacar(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; let jogo=null; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ jogo=mataData.segundaFase[idx]; if(lado==="1") jogo.gols1=valor; else jogo.gols2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ jogo=mataData.oitavas[idx]; if(lado==="1") jogo.gols1=valor; else jogo.gols2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ jogo=mataData.quartas[idx]; if(lado==="1") jogo.gols1=valor; else jogo.gols2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ jogo=mataData.semifinais[idx]; if(lado==="1") jogo.gols1=valor; else jogo.gols2=valor; atualizado=true; } } else if(fase==="final"){ jogo=mataData.final; if(lado==="1") jogo.gols1=valor; else jogo.gols2=valor; atualizado=true; } else if(fase==="terceiro"){ jogo=mataData.terceiroLugar; if(lado==="1") jogo.gols1=valor; else jogo.gols2=valor; atualizado=true; } if(atualizado && jogo){ let gv1=jogo.gols1!==""?parseInt(jogo.gols1):null; let gv2=jogo.gols2!==""?parseInt(jogo.gols2):null; if(!(gv1!==null && gv2!==null && gv1===gv2)){ jogo.pens1=""; jogo.pens2=""; } atualizarBracketCompleto(); salvarStorage(); renderMataMata(); } }
+    function handleMataInput(e) { let inp=e.target; let parent=inp.closest('.confronto-mata'); if(!parent) return; let g1=parent.querySelector('.mata-gol1'); let g2=parent.querySelector('.mata-gol2'); let penDiv=parent.querySelector('.mata-penalties'); let v1=g1?.value?.trim()||''; let v2=g2?.value?.trim()||''; if(v1!==''&&v2!==''&&v1===v2){ if(penDiv) penDiv.style.display='flex'; } else { if(penDiv){ penDiv.style.display='none'; let p1=penDiv.querySelector('.mata-pen1'); let p2=penDiv.querySelector('.mata-pen2'); if(p1) p1.value=''; if(p2) p2.value=''; } } }
+    function handleMataPen(e) { let inp=e.target; let fase=inp.dataset.fase, idxRaw=inp.dataset.idx, lado=inp.dataset.lado; let valor=inp.value.trim()===""?"":parseInt(inp.value); if(valor!=="" && (isNaN(valor)||valor<0)) valor=0; let atualizado=false; if(fase==="segundaFase" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.segundaFase[idx]){ if(lado==="1") mataData.segundaFase[idx].pens1=valor; else mataData.segundaFase[idx].pens2=valor; atualizado=true; } } else if(fase==="oitavas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.oitavas[idx]){ if(lado==="1") mataData.oitavas[idx].pens1=valor; else mataData.oitavas[idx].pens2=valor; atualizado=true; } } else if(fase==="quartas" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.quartas[idx]){ if(lado==="1") mataData.quartas[idx].pens1=valor; else mataData.quartas[idx].pens2=valor; atualizado=true; } } else if(fase==="semifinais" && idxRaw!=="unico"){ let idx=parseInt(idxRaw); if(!isNaN(idx) && mataData.semifinais[idx]){ if(lado==="1") mataData.semifinais[idx].pens1=valor; else mataData.semifinais[idx].pens2=valor; atualizado=true; } } else if(fase==="final"){ if(lado==="1") mataData.final.pens1=valor; else mataData.final.pens2=valor; atualizado=true; } else if(fase==="terceiro"){ if(lado==="1") mataData.terceiroLugar.pens1=valor; else mataData.terceiroLugar.pens2=valor; atualizado=true; } if(atualizado){ atualizarBracketCompleto(); salvarStorage(); renderMataMata(); } }
     function attachGruposToggleEvents() { document.querySelectorAll('[data-toggle-grupo]').forEach(h=>h.addEventListener('click', function(){ let g=this.dataset.toggleGrupo; let c=document.querySelector(`[data-grupo-content="${g}"]`); let icon=this.querySelector('.toggle-icon'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.grupos[g]=!col; salvarStorage(); atualizarBotoesToggle(); } })); }
     function attachFaseToggleEvents() { document.querySelectorAll('[data-toggle-fase]').forEach(h=>h.addEventListener('click', function(){ let f=this.dataset.toggleFase; let c=document.querySelector(`[data-fase-content="${f}"]`); let icon=this.querySelector('.fase-toggle'); if(c){ let col=c.classList.toggle('collapsed'); icon.innerHTML=col?'▶':'▼'; expansionState.fases[f]=!col; salvarStorage(); atualizarBotoesToggle(); } })); }
     function renderCompleto() { renderGrupos(); renderMataMata(); }
@@ -2410,14 +3188,134 @@
         const btn = e.target.closest('.btn-api-search');
         if (!btn) return;
         e.preventDefault();
+        // Grupo (fase de grupos)
         const grupo = btn.dataset.grupo;
         const jogoIdx = parseInt(btn.dataset.jogo);
         const timeCasa = btn.dataset.timecasa;
         const timeFora = btn.dataset.timefora;
         if (grupo && !isNaN(jogoIdx) && timeCasa && timeFora) {
             await buscarPlacarApi(grupo, jogoIdx, timeCasa, timeFora);
+            return;
+        }
+        // Mata-mata
+        const fase = btn.dataset.fase;
+        const idxRaw = btn.dataset.idx;
+        const time1 = btn.dataset.time1;
+        const time2 = btn.dataset.time2;
+        if (fase && time1 && time2) {
+            await buscarPlacarMata(fase, idxRaw, time1, time2, btn);
         }
     });
+
+    async function buscarPlacarMata(fase, idxRaw, time1, time2, btn) {
+        showToast('🔄 Buscando placar online (ESPN)...');
+        if (btn) { btn.classList.add('loading'); btn.textContent = '⏳'; }
+        // Determinar data do jogo a partir do mataInfo
+        let dataStr = '';
+        if (fase === 'segundaFase' && idxRaw !== 'unico') {
+            dataStr = mataInfo.segundaFase[parseInt(idxRaw)] || '';
+        } else if (fase === 'oitavas' && idxRaw !== 'unico') {
+            dataStr = mataInfo.oitavas[parseInt(idxRaw)] || '';
+        } else if (fase === 'quartas' && idxRaw !== 'unico') {
+            dataStr = mataInfo.quartas[parseInt(idxRaw)] || '';
+        } else if (fase === 'semifinais' && idxRaw !== 'unico') {
+            dataStr = mataInfo.semifinais[parseInt(idxRaw)] || '';
+        } else if (fase === 'final') {
+            dataStr = mataInfo.final || '';
+        } else if (fase === 'terceiro') {
+            dataStr = mataInfo.terceiro || '';
+        }
+        // Extrair data no formato dd/mm
+        let match = dataStr.match(/(\d{2})\/(\d{2})/);
+        if (!match) {
+            // tentar data de hoje
+            const hoje = new Date();
+            match = [null, String(hoje.getDate()).padStart(2,'0'), String(hoje.getMonth()+1).padStart(2,'0')];
+        }
+        const pad = n => n < 10 ? '0' + n : '' + n;
+        const dia = parseInt(match[1]), mes = parseInt(match[2]);
+        // Tentar 3 dias ao redor da data
+        const base = new Date(Date.UTC(2026, mes-1, dia));
+        const urls = [];
+        for (let d = -1; d <= 1; d++) {
+            const dt = new Date(base.getTime() + d * 86400000);
+            urls.push(_ESPN_API + '?dates=' + dt.getUTCFullYear() + pad(dt.getUTCMonth()+1) + pad(dt.getUTCDate()));
+        }
+        // Também tenta sem filtro de data
+        urls.push(_ESPN_API);
+
+        for (const url of urls) {
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 15000);
+                const resp = await fetch(url, { signal: ctrl.signal });
+                clearTimeout(timer);
+                if (!resp.ok) continue;
+                const data = await resp.json();
+                const eventos = data.events || [];
+                for (const ev of eventos) {
+                    const comps = ev.competitions || [];
+                    if (!comps.length) continue;
+                    const comp = comps[0];
+                    const times = comp.competitors || [];
+                    if (times.length < 2) continue;
+                    const homeApp = _espnParaApp(times[0].team?.name || '');
+                    const awayApp = _espnParaApp(times[1].team?.name || '');
+                    const matchDireto = (homeApp === time1 && awayApp === time2);
+                    const matchInvertido = (homeApp === time2 && awayApp === time1);
+                    if (matchDireto || matchInvertido) {
+                        const statusJogo = ev.status?.type?.name || '';
+                        if (statusJogo === 'STATUS_FINAL' || statusJogo === 'STATUS_FULL_TIME' ||
+                            statusJogo === 'STATUS_IN_PROGRESS' || statusJogo === 'STATUS_HALFTIME') {
+                            const g1r = parseInt(times[0].score) || 0;
+                            const g2r = parseInt(times[1].score) || 0;
+                            const gols1 = matchDireto ? g1r : g2r;
+                            const gols2 = matchDireto ? g2r : g1r;
+                            // Tentar obter pênaltis se disponível
+                            let pens1 = '', pens2 = '';
+                            if (comp.details && comp.details.penaltyScore) {
+                                const pen = comp.details.penaltyScore;
+                                pens1 = matchDireto ? (pen.home || '') : (pen.away || '');
+                                pens2 = matchDireto ? (pen.away || '') : (pen.home || '');
+                            }
+                            // Atualizar o jogo no mataData
+                            let jogo = null;
+                            if (fase === 'segundaFase' && idxRaw !== 'unico') jogo = mataData.segundaFase[parseInt(idxRaw)];
+                            else if (fase === 'oitavas' && idxRaw !== 'unico') jogo = mataData.oitavas[parseInt(idxRaw)];
+                            else if (fase === 'quartas' && idxRaw !== 'unico') jogo = mataData.quartas[parseInt(idxRaw)];
+                            else if (fase === 'semifinais' && idxRaw !== 'unico') jogo = mataData.semifinais[parseInt(idxRaw)];
+                            else if (fase === 'final') jogo = mataData.final;
+                            else if (fase === 'terceiro') jogo = mataData.terceiroLugar;
+                            if (jogo) {
+                                jogo.gols1 = gols1;
+                                jogo.gols2 = gols2;
+                                if (pens1 !== '' || pens2 !== '') {
+                                    jogo.pens1 = pens1;
+                                    jogo.pens2 = pens2;
+                                }
+                                atualizarBracketCompleto();
+                                salvarStorage();
+                                renderMataMata();
+                            }
+                            const penStr = (pens1 !== '' && pens2 !== '') ? ` (${pens1}—${pens2} pen)` : '';
+                            showToast('✅ Placar: ' + time1 + ' ' + gols1 + '—' + gols2 + ' ' + time2 + penStr);
+                            if (btn) { btn.classList.remove('loading'); btn.classList.add('success'); btn.textContent = '✅'; }
+                            return;
+                        } else {
+                            showToast('⏳ Jogo ainda não começou.', true);
+                            if (btn) { btn.classList.remove('loading'); btn.textContent = '🔄'; }
+                            return;
+                        }
+                    }
+                }
+            } catch(e) {
+                if (e.name === 'AbortError') continue;
+            }
+        }
+        showToast('🔍 Jogo não encontrado na ESPN.', true);
+        if (btn) { btn.classList.remove('loading'); btn.classList.add('error'); btn.textContent = '❌'; }
+        if (btn) { setTimeout(() => { btn.classList.remove('loading','success','error'); btn.textContent = '🔄'; }, 3000); }
+    }
 
     carregarStorage();
     renderCompleto();
